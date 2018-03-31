@@ -50,7 +50,7 @@ function __init__()
 
 	//register clientfield for each person
 	level.laststand_update_clientfields = [];
-	for( i = 0; i < 4; i++ )
+	for( i = 0; i < 8; i++ ) // DUKIP - modify for 8 players
 	{
 		level.laststand_update_clientfields[i] = "laststand_update" + i;
 		clientfield::register( "world", level.laststand_update_clientfields[i], VERSION_SHIP, 5, "counter" );
@@ -88,11 +88,15 @@ function laststand_global_init()
 	level.CONST_LASTSTAND_GETUP_BAR_REGEN				= 0.0025;	// Percent of the bar filled for auto fill logic
 	level.CONST_LASTSTAND_GETUP_BAR_DAMAGE				= 0.1;		// Percent of the bar removed by AI damage
 	
-	level.player_name_directive=[];
+	level.player_name_directive=[]; // DUKIP - modify for 8 players
 	level.player_name_directive[0] = &"ZOMBIE_PLAYER_NAME_0";
 	level.player_name_directive[1] = &"ZOMBIE_PLAYER_NAME_1";
 	level.player_name_directive[2] = &"ZOMBIE_PLAYER_NAME_2";
 	level.player_name_directive[3] = &"ZOMBIE_PLAYER_NAME_3";
+	level.player_name_directive[4] = &"ZOMBIE_PLAYER_NAME_4";
+	level.player_name_directive[5] = &"ZOMBIE_PLAYER_NAME_5";
+	level.player_name_directive[6] = &"ZOMBIE_PLAYER_NAME_6";
+	level.player_name_directive[7] = &"ZOMBIE_PLAYER_NAME_7";
 }
 
 function player_last_stand_stats( eInflictor, attacker, iDamage, sMeansOfDeath, weapon, vDir, sHitLoc, psOffsetTime, deathAnimDuration )

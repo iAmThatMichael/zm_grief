@@ -16,7 +16,7 @@ REGISTER_SYSTEM( "zm_laststand", &__init__, undefined )
 function __init__()
 {
 	level.laststands = [];
-	for( i = 0; i < 4; i++ )
+	for( i = 0; i < 8; i++ ) // DUKIP - modify for 8 players
 	{
 		level.laststands[i] = SpawnStruct();
 		level.laststands[i].bleedoutTime = 0;
