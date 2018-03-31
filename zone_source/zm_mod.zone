@@ -3,6 +3,18 @@
 
 #include "zm_mod.class"
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-rawfile,dummy.cfg
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//	{Grief}
+scriptparsetree,scripts/zm/gametypes/zgrief.csc
+scriptparsetree,scripts/zm/gametypes/zgrief.gsc
+
+//  {T7ScriptSuite}
+scriptparsetree,scripts/m_shared/array_shared.gsc
+scriptparsetree,scripts/m_shared/lui_shared.gsc
+scriptparsetree,scripts/m_shared/math_shared.gsc
+scriptparsetree,scripts/m_shared/player_shared.gsc
+scriptparsetree,scripts/m_shared/trigger_shared.gsc
+scriptparsetree,scripts/m_shared/util_shared.gsc
+
+//	{Base}
+scriptparsetree,scripts/zm/_zm.csc
+scriptparsetree,scripts/zm/_zm.gsc

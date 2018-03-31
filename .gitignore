@@ -1,3 +1,4 @@
 zone_source/*/*
 zone/*
 *.log
+scripts/m_shared
