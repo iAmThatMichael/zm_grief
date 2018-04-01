@@ -15,6 +15,7 @@
 #insert scripts\shared\shared.gsh;
 #insert scripts\shared\version.gsh;
 
+#define CHECK_GRIEF_TEAM(__team) (isdefined(level.grief_team[__team])&&level.grief_team[__team].size>0)
 function main()
 {
 	zm_gametype::main();	// Generic zombie mode setup - must be called first.
@@ -121,14 +122,51 @@ function debug_stuff()
 
 function grief_round_logic()
 {
+	level endon( "end_game" );
+
 	do
 	{
-		WAIT_SERVER_FRAME;
-		if ( IS_TRUE( level.grief_team["A"] ) )
-			IPrintLn( "Team: A " + level.grief_team["A"].size );
-		if ( IS_TRUE( level.grief_team["B"] ) )
-			IPrintLn( "Team: B " + level.grief_team["B"].size );
+		IPrintLnBold( "----- LOOP START" );
+		grief_in_round_logic();
+		grief_end_round_logic();
+		IPrintLnBold( "----- LOOP END" );
+	} while( true );
+}
 
-	} while( true ); // find a var for something inbetween round
-	// might op for doing a notify/endon deal instead
+function grief_in_round_logic()
+{
+	level endon( "end_game" );
+	level endon( "end_of_round" );
+
+	level waittill( "start_of_round" );
+	IPrintLn( "Start Round" );
+
+	level thread grief_check_teams();
+}
+
+function grief_check_teams()
+{
+	level endon( "end_game" );
+	level endon( "end_of_round" );
+
+	while ( true )
+	{
+		WAIT_SERVER_FRAME;
+
+		if ( CHECK_GRIEF_TEAM("A") )
+			IPrintLn("Team A: " + level.grief_team["A"].size );
+		if ( CHECK_GRIEF_TEAM("B") )
+			IPrintLn("Team B: " + level.grief_team["B"].size );
+	}
+}
+
+function grief_end_round_logic()
+{
+	level endon( "end_game" );
+	level endon( "start_of_round" );
+
+	level waittill( "end_of_round" );
+	IPrintLn( "End Round" );
+
+	// check teams alive here for end-game OR round restart
 }
