@@ -15,7 +15,7 @@
 #insert scripts\shared\shared.gsh;
 #insert scripts\shared\version.gsh;
 
-#define CHECK_GRIEF_TEAM(__team) (isdefined(level.grief_team[__team])&&level.grief_team[__team].size>0)
+#define VALID_GRIEF_TEAM(__team) (isdefined(level.grief_team[__team])&&level.grief_team[__team].size>0)
 function main()
 {
 	zm_gametype::main();	// Generic zombie mode setup - must be called first.
@@ -112,6 +112,9 @@ function grief()
 {
 	level flag::wait_till( "initial_blackscreen_passed" );
 
+	DEFAULT( level.grief_team_dead, undefined );
+	DEFAULT( level.grief_teams_dead, false );
+
 	level thread grief_round_logic();
 }
 
@@ -153,10 +156,46 @@ function grief_check_teams()
 	{
 		WAIT_SERVER_FRAME;
 
-		if ( CHECK_GRIEF_TEAM("A") )
+		MAKE_ARRAY( a_dead_players );
+
+		if ( VALID_GRIEF_TEAM("A") )
+		{
 			IPrintLn("Team A: " + level.grief_team["A"].size );
-		if ( CHECK_GRIEF_TEAM("B") )
+			foreach( player in level.grief_team["A"] )
+			{
+				if ( !IsAlive( player ) )
+					ARRAY_ADD( a_dead_players["A"], player );
+			}
+			if ( a_dead_players["A"].size == level.grief_team["A"].size ) // all players are dead
+			{
+				IPrintLnBold( "All Players in A are Dead! Win The Round Team B" );
+				// if no team dead set value to true
+				if ( !level.grief_team_dead )
+					level.grief_team_dead = "A";
+				else // a team was dead, but now we're dead
+					level.grief_teams_dead = true;
+			}
+		}
+
+		if ( VALID_GRIEF_TEAM("B") )
+		{
 			IPrintLn("Team B: " + level.grief_team["B"].size );
+			foreach( player in level.grief_team["B"] )
+			{
+				if ( !IsAlive( player ) )
+					ARRAY_ADD( a_dead_players["B"], player );
+			}
+
+			if ( a_dead_players["B"].size == level.grief_team["B"].size ) // all players are dead
+			{
+				IPrintLnBold( "All Players in B are Dead! Win The Round Team A" );
+				// if no team dead set value to true
+				if ( !level.grief_team_dead )
+					level.grief_team_dead = "B";
+				else // a team was dead, but now we're dead
+					level.grief_teams_dead = true;
+			}
+		}
 	}
 }
 
@@ -169,4 +208,18 @@ function grief_end_round_logic()
 	IPrintLn( "End Round" );
 
 	// check teams alive here for end-game OR round restart
+	// reset values
+	if ( isdefined( level.grief_team_dead ) && IsString( level.grief_team_dead ) )
+	{
+		IPrintLnBold( "A team has died, the winner is " + ( level.grief_team_dead === "A" ? "B" : "A" )  "!" );
+	}
+	else if ( IS_TRUE( level.grief_teams_dead ) )
+	{
+		IPrintLnBold( "BOTH TEAMS HAVE DIED -- RESTARTING ROUND" );
+	}
+	else
+	{
+		level.grief_team_dead = undefined;
+		level.grief_teams_dead = false;
+	}
 }
