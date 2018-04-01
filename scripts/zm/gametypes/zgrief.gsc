@@ -2,13 +2,18 @@
 
 #using scripts\shared\callbacks_shared;
 #using scripts\shared\clientfield_shared;
+#using scripts\shared\flag_shared;
 #using scripts\shared\math_shared;
 
-#insert scripts\shared\shared.gsh;
-#insert scripts\shared\version.gsh;
 #using scripts\zm\gametypes\_zm_gametype;
 
 #using scripts\zm\_zm_stats;
+
+// T7ScriptSuite
+#using scripts\m_shared\util_shared;
+
+#insert scripts\shared\shared.gsh;
+#insert scripts\shared\version.gsh;
 
 function main()
 {
@@ -22,24 +27,27 @@ function main()
 	level._game_module_stat_update_func = &zm_stats::survival_classic_custom_stat_update;
 
 	// clientfield registration
-	/*for ( i = 4; i < 8; i++ )
+	for ( i = 4; i < 8; i++ )
 	{
-        // Hardcoded clientfields per-player, each require a bitlen of 3.
+		// Hardcoded clientfields per-player, each require a bitlen of 3.
 		clientfield::register( "clientuimodel", "PlayerList.client" + i + ".score_cf_damage", VERSION_SHIP, GetMinBitCountForNum( 7 ), "counter" );
-        clientfield::register( "clientuimodel", "PlayerList.client" + i + ".score_cf_death_normal", VERSION_SHIP, GetMinBitCountForNum( 3 ), "counter" );
-        clientfield::register( "clientuimodel", "PlayerList.client" + i + ".score_cf_death_torso", VERSION_SHIP, GetMinBitCountForNum( 3 ), "counter" );
-        clientfield::register( "clientuimodel", "PlayerList.client" + i + ".score_cf_death_neck", VERSION_SHIP, GetMinBitCountForNum( 3 ), "counter" );
-        clientfield::register( "clientuimodel", "PlayerList.client" + i + ".score_cf_death_head", VERSION_SHIP, GetMinBitCountForNum( 3 ), "counter" );
-        clientfield::register( "clientuimodel", "PlayerList.client" + i + ".score_cf_death_melee", VERSION_SHIP, GetMinBitCountForNum( 3 ), "counter" );
-	}*/
+		clientfield::register( "clientuimodel", "PlayerList.client" + i + ".score_cf_death_normal", VERSION_SHIP, GetMinBitCountForNum( 3 ), "counter" );
+		clientfield::register( "clientuimodel", "PlayerList.client" + i + ".score_cf_death_torso", VERSION_SHIP, GetMinBitCountForNum( 3 ), "counter" );
+		clientfield::register( "clientuimodel", "PlayerList.client" + i + ".score_cf_death_neck", VERSION_SHIP, GetMinBitCountForNum( 3 ), "counter" );
+		clientfield::register( "clientuimodel", "PlayerList.client" + i + ".score_cf_death_head", VERSION_SHIP, GetMinBitCountForNum( 3 ), "counter" );
+		clientfield::register( "clientuimodel", "PlayerList.client" + i + ".score_cf_death_melee", VERSION_SHIP, GetMinBitCountForNum( 3 ), "counter" );
+	}
 
-	//callback::on_connect( &on_player_connect );
+	callback::on_connect( &on_player_connect );
 	//callback::on_disconnect( &on_player_disconnect );
 	callback::on_spawned( &on_player_spawned );
 }
 
 function onPrecacheGameType()
 {
+	level.no_end_game_check = true; // disable end-game check (_zm_utility)
+	level._game_module_game_end_check = &grief_game_end_check_func; // override damage check (_zm)
+
 	level.playerSuicideAllowed = true;
 	level.canPlayerSuicide =&zm_gametype::canPlayerSuicide;
 }
@@ -56,12 +64,42 @@ function onStartGameType()
 	}
 
 	level.mapCenter = math::find_box_center( level.spawnMins, level.spawnMaxs );
-	setMapCenter( level.mapCenter );
+	SetMapCenter( level.mapCenter );
+
+	level thread grief();
 }
 
+function grief_game_end_check_func()
+{
+	return false;
+}
+
+
+function on_player_connect()
+{
+	a_index = Array( "A", "B" );
+
+	foreach( index, player in level.players )
+		player.team_grief = a_index[ Int( index % 2 ) ];
+}
 
 function on_player_spawned()
 {
 	self endon( "death" );
 	self endon( "disconnect" );
+
+	self thread m_util::spawn_bot_button();
+	self thread m_util::button_pressed( &ActionSlotOneButtonPressed, &debug_stuff );
+
+	IPrintLnBold( "Name: " + self.name + " Team: " + self.team_grief );
+}
+
+function grief()
+{
+	level flag::wait_till( "initial_blackscreen_passed" );
+}
+
+function debug_stuff()
+{
+	self IPrintLnBold( "Team: " + self.team_grief );
 }
