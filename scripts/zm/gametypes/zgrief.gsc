@@ -3,6 +3,7 @@
 #using scripts\shared\callbacks_shared;
 #using scripts\shared\clientfield_shared;
 #using scripts\shared\flag_shared;
+#using scripts\shared\laststand_shared;
 #using scripts\shared\math_shared;
 
 #using scripts\zm\gametypes\_zm_gametype;
@@ -166,33 +167,42 @@ function grief_check_teams()
 
 		if ( VALID_GRIEF_TEAM("A") )
 		{
-			IPrintLn("Team A: " + level.grief_team["A"].size );
+			//IPrintLn("Team A: " + level.grief_team["A"].size );
 			foreach( player in level.grief_team["A"] )
 			{
-				if ( !IsAlive( player ) )
-					ARRAY_ADD( a_dead_players["A"], player );
+				if ( !player laststand::player_is_in_laststand() )
+					continue;
+
+				ARRAY_ADD( a_dead_players["A"], player );
 			}
+
 			if ( a_dead_players["A"].size == level.grief_team["A"].size ) // all players are dead
 			{
 				// if no team dead set value to true
 				if ( !IsString( level.grief_team_dead ) )
 				{
 					level.grief_team_dead = "A";
-					IPrintLnBold( "DEAD " + a_dead_players["A"].size + " TEAM " + level.grief_team["A"].size );
 					IPrintLnBold( "All Players in A are Dead! Win The Round Team B" );
 				}
 				else // a team was dead, but now we're dead
+				{
 					level.grief_teams_dead = true;
+					IPrintLnBold( "BOTH TEAMS ARE DEAD" );
+				}
 			}
+			else
+				level.grief_team_dead = false;
 		}
 
 		if ( VALID_GRIEF_TEAM("B") )
 		{
-			IPrintLn("Team B: " + level.grief_team["B"].size );
+			//IPrintLn("Team B: " + level.grief_team["B"].size );
 			foreach( player in level.grief_team["B"] )
 			{
-				if ( !IsAlive( player ) )
-					ARRAY_ADD( a_dead_players["B"], player );
+				if ( !player laststand::player_is_in_laststand() )
+					continue;
+
+				ARRAY_ADD( a_dead_players["B"], player );
 			}
 
 			if ( a_dead_players["B"].size == level.grief_team["B"].size ) // all players are dead
@@ -201,12 +211,16 @@ function grief_check_teams()
 				if ( !IsString( level.grief_team_dead ) )
 				{
 					level.grief_team_dead = "B";
-					IPrintLnBold( "DEAD " + a_dead_players["B"].size + " TEAM " + level.grief_team["B"].size );
 					IPrintLnBold( "All Players in B are Dead! Win The Round Team A" );
 				}
 				else // a team was dead, but now we're dead
+				{
 					level.grief_teams_dead = true;
+					IPrintLnBold( "BOTH TEAMS ARE DEAD" );
+				}
 			}
+			else
+				level.grief_team_dead = false;
 		}
 	}
 }
