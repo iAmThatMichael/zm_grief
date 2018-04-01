@@ -39,25 +39,27 @@ function main()
 	}
 
 	callback::on_connect( &on_player_connect );
-	//callback::on_disconnect( &on_player_disconnect );
+	callback::on_disconnect( &on_player_disconnect );
 	callback::on_spawned( &on_player_spawned );
 }
 
 function onPrecacheGameType()
 {
-	level.no_end_game_check = true; // disable end-game check (_zm_utility)
-	level._game_module_game_end_check = &grief_game_end_check_func; // override damage check (_zm)
-
 	level.playerSuicideAllowed = true;
-	level.canPlayerSuicide =&zm_gametype::canPlayerSuicide;
+	level.canPlayerSuicide = &zm_gametype::canPlayerSuicide;
 }
 
 function onStartGameType()
 {
+	level.no_end_game_check = true; // disable end-game check (_zm_utility)
+	level._game_module_game_end_check = &grief_game_end_check_func; // override damage check (_zm)
+
+	MAKE_ARRAY( level.grief_team );
+
 	level.spawnMins = ( 0, 0, 0 );
 	level.spawnMaxs = ( 0, 0, 0 );
 	structs = struct::get_array("player_respawn_point", "targetname");
-	foreach(struct in structs)
+	foreach ( struct in structs )
 	{
 		level.spawnMins = math::expand_mins( level.spawnMins, struct.origin );
 		level.spawnMaxs = math::expand_maxs( level.spawnMaxs, struct.origin );
@@ -79,8 +81,19 @@ function on_player_connect()
 {
 	a_index = Array( "A", "B" );
 
-	foreach( index, player in level.players )
-		player.team_grief = a_index[ Int( index % 2 ) ];
+	// always updating
+	// not sure if I'll reuse
+	//foreach ( index, player in level.players )
+	//	player.team_grief = a_index[ Int( index % 2 ) ];
+
+	self.team_grief = a_index[ Int( self GetEntityNumber() % 2 ) ];
+
+	ARRAY_ADD( level.grief_team[ self.team_grief ], self );
+}
+
+function on_player_disconnect()
+{
+	ArrayRemoveValue( level.grief_team[ self.team_grief ], self );
 }
 
 function on_player_spawned()
@@ -97,9 +110,25 @@ function on_player_spawned()
 function grief()
 {
 	level flag::wait_till( "initial_blackscreen_passed" );
+
+	level thread grief_round_logic();
 }
 
 function debug_stuff()
 {
 	self IPrintLnBold( "Team: " + self.team_grief );
+}
+
+function grief_round_logic()
+{
+	do
+	{
+		WAIT_SERVER_FRAME;
+		if ( IS_TRUE( level.grief_team["A"] ) )
+			IPrintLn( "Team: A " + level.grief_team["A"].size );
+		if ( IS_TRUE( level.grief_team["B"] ) )
+			IPrintLn( "Team: B " + level.grief_team["B"].size );
+
+	} while( true ); // find a var for something inbetween round
+	// might op for doing a notify/endon deal instead
 }
