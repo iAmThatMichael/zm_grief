@@ -3,12 +3,12 @@
 #using scripts\shared\callbacks_shared;
 #using scripts\shared\clientfield_shared;
 #using scripts\shared\flag_shared;
-#using scripts\shared\laststand_shared;
 #using scripts\shared\math_shared;
 
 #using scripts\zm\gametypes\_zm_gametype;
 
 #using scripts\zm\_zm_stats;
+#using scripts\zm\_zm_utility;
 
 // T7ScriptSuite
 #using scripts\m_shared\util_shared;
@@ -56,8 +56,6 @@ function onStartGameType()
 	level.no_end_game_check = true; // disable end-game check (_zm_utility)
 	level._game_module_game_end_check = &grief_game_end_check_func; // override damage check (_zm)
 
-	MAKE_ARRAY( level.grief_team );
-
 	level.spawnMins = ( 0, 0, 0 );
 	level.spawnMaxs = ( 0, 0, 0 );
 	structs = struct::get_array("player_respawn_point", "targetname");
@@ -86,16 +84,13 @@ function on_player_connect()
 	// always updating
 	// not sure if I'll reuse
 	//foreach ( index, player in level.players )
-	//	player.team_grief = a_index[ Int( index % 2 ) ];
+	//	player.grief_team = a_index[ Int( index % 2 ) ];
 
-	self.team_grief = a_index[ Int( self GetEntityNumber() % 2 ) ];
-
-	ARRAY_ADD( level.grief_team[ self.team_grief ], self );
+	self.grief_team = a_index[ Int( self GetEntityNumber() % 2 ) ];
 }
 
 function on_player_disconnect()
 {
-	ArrayRemoveValue( level.grief_team[ self.team_grief ], self );
 }
 
 function on_player_spawned()
@@ -104,9 +99,7 @@ function on_player_spawned()
 	self endon( "disconnect" );
 
 	self thread m_util::spawn_bot_button();
-	self thread m_util::button_pressed( &ActionSlotOneButtonPressed, &debug_stuff );
 
-	IPrintLnBold( "Name: " + self.name + " Team: " + self.team_grief );
 	// bots do my bidding and FREEZE
 	if ( self IsTestClient() )
 		self FreezeControlsAllowLook( true );
@@ -117,14 +110,8 @@ function grief()
 	level flag::wait_till( "initial_blackscreen_passed" );
 
 	DEFAULT( level.grief_team_dead, false );
-	DEFAULT( level.grief_teams_dead, false );
 
 	level thread grief_round_logic();
-}
-
-function debug_stuff()
-{
-	self IPrintLnBold( "Team: " + self.team_grief );
 }
 
 function grief_round_logic()
@@ -133,10 +120,8 @@ function grief_round_logic()
 
 	do
 	{
-		IPrintLnBold( "----- LOOP START" );
 		grief_in_round_logic();
 		grief_end_round_logic();
-		IPrintLnBold( "----- LOOP END" );
 	} while( true );
 }
 
@@ -146,7 +131,6 @@ function grief_in_round_logic()
 	level endon( "end_of_round" );
 
 	level waittill( "start_of_round" );
-	IPrintLn( "Start Round" );
 
 	level thread grief_check_teams();
 }
@@ -156,71 +140,47 @@ function grief_check_teams()
 	level endon( "end_game" );
 	level endon( "end_of_round" );
 
-	a_dead_players = [];
+	team_a_alive = 0;
+	team_b_alive = 0;
 
 	while ( true )
 	{
 		WAIT_SERVER_FRAME;
 
-		a_dead_players["A"] = [];
-		a_dead_players["B"] = [];
+		team_a_alive = 0;
+		team_b_alive = 0;
 
-		if ( VALID_GRIEF_TEAM("A") )
+		foreach( player in level.players )
 		{
-			//IPrintLn("Team A: " + level.grief_team["A"].size );
-			foreach( player in level.grief_team["A"] )
+			if ( zm_utility::is_player_valid( player ) )
 			{
-				if ( !player laststand::player_is_in_laststand() )
-					continue;
-
-				ARRAY_ADD( a_dead_players["A"], player );
+				if ( player.grief_team == "A" )
+					team_a_alive++;
+				else
+					team_b_alive++;
 			}
-
-			if ( a_dead_players["A"].size == level.grief_team["A"].size ) // all players are dead
-			{
-				// if no team dead set value to true
-				if ( !IsString( level.grief_team_dead ) )
-				{
-					level.grief_team_dead = "A";
-					IPrintLnBold( "All Players in A are Dead! Win The Round Team B" );
-				}
-				else // a team was dead, but now we're dead
-				{
-					level.grief_teams_dead = true;
-					IPrintLnBold( "BOTH TEAMS ARE DEAD" );
-				}
-			}
-			else
-				level.grief_team_dead = false;
 		}
-
-		if ( VALID_GRIEF_TEAM("B") )
+		// neither team is downed
+		if ( team_a_alive > 0 && team_b_alive > 0 )
 		{
-			//IPrintLn("Team B: " + level.grief_team["B"].size );
-			foreach( player in level.grief_team["B"] )
-			{
-				if ( !player laststand::player_is_in_laststand() )
-					continue;
+			level.grief_team_dead = false;
+			continue;
+		}
+		// both teams are dead
+		else if ( team_a_alive == 0 && team_b_alive == 0 )
+		{
+			level.grief_team_dead = false;
 
-				ARRAY_ADD( a_dead_players["B"], player );
-			}
-
-			if ( a_dead_players["B"].size == level.grief_team["B"].size ) // all players are dead
-			{
-				// if no team dead set value to true
-				if ( !IsString( level.grief_team_dead ) )
-				{
-					level.grief_team_dead = "B";
-					IPrintLnBold( "All Players in B are Dead! Win The Round Team A" );
-				}
-				else // a team was dead, but now we're dead
-				{
-					level.grief_teams_dead = true;
-					IPrintLnBold( "BOTH TEAMS ARE DEAD" );
-				}
-			}
-			else
-				level.grief_team_dead = false;
+			zm_utility::zombie_goto_round( level.round_number );
+		}
+		// check for team B
+		else if ( team_a_alive == 0 )
+		{
+			level.grief_team_dead = "A";
+		}
+		else if ( team_b_alive == 0 )
+		{
+			level.grief_team_dead = "B";
 		}
 	}
 }
@@ -231,21 +191,16 @@ function grief_end_round_logic()
 	level endon( "start_of_round" );
 
 	level waittill( "end_of_round" );
-	IPrintLn( "End Round" );
 
 	// check teams alive here for end-game OR round restart
 	// reset values
-	if ( isdefined( level.grief_team_dead ) && IsString( level.grief_team_dead ) )
+	if ( IsString( level.grief_team_dead ) )
 	{
 		IPrintLnBold( "A team has died, the winner is " + ( level.grief_team_dead === "A" ? "B" : "A" ) + "!" );
-	}
-	else if ( IS_TRUE( level.grief_teams_dead ) )
-	{
-		IPrintLnBold( "BOTH TEAMS HAVE DIED -- RESTARTING ROUND" );
+		level notify( "end_game" );
 	}
 	else
 	{
 		level.grief_team_dead = false;
-		level.grief_teams_dead = false;
 	}
 }
