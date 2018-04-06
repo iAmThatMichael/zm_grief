@@ -122,7 +122,7 @@ function grief_round_logic()
 	{
 		grief_in_round_logic();
 		grief_end_round_logic();
-	} while( true );
+	} while ( true );
 }
 
 function grief_in_round_logic()
@@ -150,7 +150,7 @@ function grief_check_teams()
 		team_a_alive = 0;
 		team_b_alive = 0;
 
-		foreach( player in level.players )
+		foreach ( player in level.players )
 		{
 			if ( zm_utility::is_player_valid( player ) )
 			{
@@ -173,14 +173,10 @@ function grief_check_teams()
 
 			zm_utility::zombie_goto_round( level.round_number );
 		}
-		// check for team B
-		else if ( team_a_alive == 0 )
+		else if ( !IsString( level.grief_team_dead ) )
 		{
-			level.grief_team_dead = "A";
-		}
-		else if ( team_b_alive == 0 )
-		{
-			level.grief_team_dead = "B";
+			level.grief_team_dead = ( team_a_alive == 0 ? "A" : "B" );
+			IPrintLnBold( "Team " + level.grief_team_dead + " is downed!" );
 		}
 	}
 }
