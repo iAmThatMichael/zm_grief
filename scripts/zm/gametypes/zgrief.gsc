@@ -42,6 +42,7 @@ function main()
 
 	callback::on_connect( &on_player_connect );
 	callback::on_disconnect( &on_player_disconnect );
+	callback::on_laststand( &on_player_laststand );
 	callback::on_spawned( &on_player_spawned );
 }
 
@@ -76,21 +77,18 @@ function grief_game_end_check_func()
 	return false;
 }
 
-
 function on_player_connect()
 {
-	a_index = Array( "A", "B" );
-
-	// always updating
-	// not sure if I'll reuse
-	//foreach ( index, player in level.players )
-	//	player.grief_team = a_index[ Int( index % 2 ) ];
-
-	self.grief_team = a_index[ Int( self GetEntityNumber() % 2 ) ];
+	self.grief_team = ( Int( self GetEntityNumber() % 2 ) == 0 ? "A" : "B" );
 }
 
 function on_player_disconnect()
 {
+}
+
+function on_player_laststand()
+{
+	IPrintLnBold( self.name + " went down." );
 }
 
 function on_player_spawned()
@@ -160,19 +158,20 @@ function grief_check_teams()
 					team_b_alive++;
 			}
 		}
-		// neither team is downed
+		// neither teams are downed
 		if ( team_a_alive > 0 && team_b_alive > 0 )
 		{
 			level.grief_team_dead = false;
 			continue;
 		}
-		// both teams are dead
+		// both teams are downed
 		else if ( team_a_alive == 0 && team_b_alive == 0 )
 		{
 			level.grief_team_dead = false;
 
 			zm_utility::zombie_goto_round( level.round_number );
 		}
+		// a team is downed
 		else if ( !IsString( level.grief_team_dead ) )
 		{
 			level.grief_team_dead = ( team_a_alive == 0 ? "A" : "B" );
