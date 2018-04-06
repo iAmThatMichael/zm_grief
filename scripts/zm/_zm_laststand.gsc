@@ -27,7 +27,7 @@
 #insert scripts\zm\_zm_laststand.gsh;
 #insert scripts\zm\_zm_perks.gsh;
 
-#precache( "triggerstring", "ZOMBIE_BUTTON_TO_REVIVE_PLAYER" ); 
+#precache( "triggerstring", "ZOMBIE_BUTTON_TO_REVIVE_PLAYER" );
 #precache( "string", "ZOMBIE_REVIVING" );
 
 #precache( "string", "ZOMBIE_PLAYER_IS_REVIVING_YOU", "ZOMBIE_PLAYER_NAME_0" );
@@ -40,7 +40,7 @@
 #namespace zm_laststand;
 
 #define N_REVIVE_VISIBILITY_DELAY	2.0		// Delay before a revived player becomes visible to zombies again
-	
+
 REGISTER_SYSTEM( "zm_laststand", &__init__, undefined )
 
 function __init__()
@@ -68,7 +68,7 @@ function __init__()
 
 	if( GetDvarString( "revive_trigger_radius" ) == "" )
 	{
-		SetDvar( "revive_trigger_radius", "40" ); 
+		SetDvar( "revive_trigger_radius", "40" );
 	}
 
 	level.lastStandGetupAllowed = false;
@@ -87,7 +87,7 @@ function laststand_global_init()
 	level.CONST_LASTSTAND_GETUP_BAR_START				= 0.5;		// Fill amount of the getup bar the first time it is used
 	level.CONST_LASTSTAND_GETUP_BAR_REGEN				= 0.0025;	// Percent of the bar filled for auto fill logic
 	level.CONST_LASTSTAND_GETUP_BAR_DAMAGE				= 0.1;		// Percent of the bar removed by AI damage
-	
+
 	level.player_name_directive=[]; // DUKIP - modify for 8 players
 	level.player_name_directive[0] = &"ZOMBIE_PLAYER_NAME_0";
 	level.player_name_directive[1] = &"ZOMBIE_PLAYER_NAME_1";
@@ -108,18 +108,18 @@ function player_last_stand_stats( eInflictor, attacker, iDamage, sMeansOfDeath, 
 		{
 			demo::bookmark( "kill", gettime(), attacker, self, 0, eInflictor );
 		}
-		
+
 		if ( "zcleansed" == level.gametype )
 		{
 			if ( !IS_TRUE( attacker.is_zombie ) )
 			{
 				attacker.kills++;  // only a zombie kill increments the scoreboard, even though player stats are incremented normally
 			}
-			else 
+			else
 			{
 				attacker.downs++;  // only a human kill increments downs
 			}
-		} 
+		}
 		else
 		{
 			attacker.kills++;
@@ -136,14 +136,14 @@ function player_last_stand_stats( eInflictor, attacker, iDamage, sMeansOfDeath, 
 			attacker zm_stats::increment_player_stat( "headshots" );
 		}
 	}
-	
+
 	self increment_downed_stat();
-	
+
 	if( level flag::get( "solo_game" ) && !self.lives && GetNumConnectedPlayers() < 2 ) //the "solo_game" flag does not get cleared in hot join...so this would inflate the death stats in hot join
 	{
-		self zm_stats::increment_client_stat( "deaths" );	
+		self zm_stats::increment_client_stat( "deaths" );
 		self zm_stats::increment_player_stat( "deaths" );
-	}	
+	}
 }
 
 function increment_downed_stat()
@@ -155,9 +155,9 @@ function increment_downed_stat()
 
 	self zm_stats::increment_global_stat( "TOTAL_DOWNS" );
 	self zm_stats::increment_map_stat( "TOTAL_DOWNS" );
-	
-	self zm_stats::increment_client_stat( "downs" );	
-	
+
+	self zm_stats::increment_client_stat( "downs" );
+
 	self zm_stats::increment_player_stat( "downs" );
 	zoneName = self zm_utility::get_current_zone();
 	if ( !isdefined( zoneName ) )
@@ -188,9 +188,9 @@ function PlayerLastStand( eInflictor, attacker, iDamage, sMeansOfDeath, weapon, 
 	{
 		return;
 	}
-			
+
 	self thread player_last_stand_stats( eInflictor, attacker, iDamage, sMeansOfDeath, weapon, vDir, sHitLoc, psOffsetTime, deathAnimDuration );
-	
+
 	if( isdefined( level.playerlaststand_func ) )
 	{
 		[[level.playerlaststand_func]]( eInflictor, attacker, iDamage, sMeansOfDeath, weapon, vDir, sHitLoc, psOffsetTime, deathAnimDuration );
@@ -199,14 +199,14 @@ function PlayerLastStand( eInflictor, attacker, iDamage, sMeansOfDeath, weapon, 
 	// vision set
 	// moved to zm::player_laststand()
 	//VisionSetLastStand( "zombie_last_stand", 1 );
-	
+
 	self.health = 1;
 	self.laststand = true;
 	self set_ignoreme( true );
 	callback::callback( #"on_player_laststand" );
 	self thread gameobjects::on_player_last_stand();
 	//self thread zm_buildables::onPlayerLastStand();
-	
+
 	//self thread call_overloaded_func( "maps\_arcademode", "arcademode_player_laststand" );
 
 	// revive trigger
@@ -223,7 +223,7 @@ function PlayerLastStand( eInflictor, attacker, iDamage, sMeansOfDeath, weapon, 
 	if ( IS_TRUE( self.is_zombie ) )
 	{
 		self TakeAllWeapons();
-		
+
 		if ( isdefined( attacker ) && IsPlayer( attacker ) && attacker != self )
 		{
 			attacker notify( "killed_a_zombie_player", eInflictor, self, iDamage, sMeansOfDeath, weapon, vDir, sHitLoc, psOffsetTime, deathAnimDuration );
@@ -242,7 +242,7 @@ function PlayerLastStand( eInflictor, attacker, iDamage, sMeansOfDeath, weapon, 
 			self thread suicide_trigger_spawn();
 		}
 	}
-	
+
 	// Reset Disabled Power Perks Array On Downed State
 	//-------------------------------------------------
 	if ( isdefined( self.disabled_perks ) )
@@ -258,14 +258,14 @@ function PlayerLastStand( eInflictor, attacker, iDamage, sMeansOfDeath, weapon, 
 	{
 		// bleed out timer
 		bleedout_time = GetDvarfloat( "player_lastStandBleedoutTime" );
-		
+
 		if( isdefined( self.n_bleedout_time_multiplier ) )
 		{
 			bleedout_time *= self.n_bleedout_time_multiplier;
 		}
 
 		level clientfield::increment( "laststand_update" + ( self GetEntityNumber() ), 30 );
-		
+
 		self thread laststand_bleedout( bleedout_time );
 	}
 
@@ -273,9 +273,9 @@ function PlayerLastStand( eInflictor, attacker, iDamage, sMeansOfDeath, weapon, 
 
 	self notify( "player_downed" );
 	self thread refire_player_downed();
-	
+
 	//clean up revive trigger if he disconnects while in laststand
-	self thread laststand::cleanup_laststand_on_disconnect();	
+	self thread laststand::cleanup_laststand_on_disconnect();
 }
 
 function refire_player_downed()
@@ -298,15 +298,15 @@ function laststand_disable_player_weapons()
 	weaponInventory = self GetWeaponsList( true );
 	self.laststandPrimaryWeapons = self GetWeaponsListPrimaries();
 	self.lastActiveWeapon = self GetCurrentWeapon();
-	quickswitch = false; 
+	quickswitch = false;
 	if ( IsDefined(self) && self IsSwitchingWeapons() )
-		quickswitch = true; 
+		quickswitch = true;
 	if ( self IsThrowingGrenade() && zm_utility::is_offhand_weapon( self.lastActiveWeapon ))
-		quickswitch = true; 
+		quickswitch = true;
 	if ( zm_utility::is_hero_weapon( self.lastActiveWeapon ))
-		quickswitch = true; 
+		quickswitch = true;
 	if ( self.lastActiveWeapon.isriotshield )
-		quickswitch = true; 
+		quickswitch = true;
 	if ( quickswitch )
 	{
 		if ( isdefined( self.laststandPrimaryWeapons ) && self.laststandPrimaryWeapons.size > 0 )
@@ -328,35 +328,35 @@ function laststand_disable_player_weapons()
 	for( i = 0; i < weaponInventory.size; i++ )
 	{
 		weapon = weaponInventory[i];
-		
+
 		wclass = weapon.weapClass;
 		if ( weapon.isBallisticKnife )
 		{
 			wclass = "knife";
 		}
-		
-		if ( ( wclass == "pistol" || wclass == "pistol spread"  || wclass == "pistolspread" ) && !isdefined( self.laststandpistol ) ) 
+
+		if ( ( wclass == "pistol" || wclass == "pistol spread"  || wclass == "pistolspread" ) && !isdefined( self.laststandpistol ) )
 		{
 			self.laststandpistol = weapon;
 			self.hadpistol = true;
 
 		}
-		
+
 		if ( weapon == level.weaponReviveTool || IS_EQUAL(weapon,self.weaponReviveTool) )
 		{
 			// this player was killed while reviving another player
 			self zm_stats::increment_client_stat( "failed_sacrifices" );
 			self zm_stats::increment_player_stat( "failed_sacrifices" );
-			//iprintlnbold("failed the sacrifice - you died while reviving");			
+			//iprintlnbold("failed the sacrifice - you died while reviving");
 		}
 		else if ( weapon.isPerkBottle )
 		{
 			self TakeWeapon( weapon );
 			self.lastActiveWeapon = level.weaponNone;
-			continue;			
+			continue;
 		}
 	}
-	
+
 	if( IS_TRUE( self.hadpistol ) && isdefined( level.zombie_last_stand_pistol_memory ) )
 	{
 		self [ [ level.zombie_last_stand_pistol_memory ] ]();
@@ -366,7 +366,7 @@ function laststand_disable_player_weapons()
 	{
 		self.laststandpistol = level.laststandpistol;
 	}
-	
+
 	self notify("weapons_taken_for_last_stand");
 }
 
@@ -390,12 +390,12 @@ function laststand_enable_player_weapons()
 	{
 		self.lastActiveWeapon = level.weaponNone;
 	}
-	
+
 	if ( isdefined( self.hadpistol ) && !self.hadpistol && isdefined( self.laststandpistol ) )
 	{
 		self TakeWeapon( self.laststandpistol );
 	}
-	
+
 	if( isdefined( self.hadpistol ) && self.hadpistol == true && isdefined( level.zombie_last_stand_ammo_return ) && isdefined( self.laststandpistol ) )
 	{
 		[ [ level.zombie_last_stand_ammo_return ] ]();
@@ -414,7 +414,7 @@ function laststand_enable_player_weapons()
 	{
 		self SwitchToWeapon(); // Switch to any available primary
 	}
-	
+
 	self.laststandpistol = undefined;
 }
 
@@ -423,10 +423,10 @@ function laststand_has_players_weapons_returned( e_player )
 	if( isdefined( e_player.laststandpistol ) )
 	{
 		return false;
-	}		
+	}
 
 	return true;
-}	
+}
 
 function laststand_clean_up_on_disconnect( e_revivee, w_reviver, w_revive_tool )
 {
@@ -434,24 +434,24 @@ function laststand_clean_up_on_disconnect( e_revivee, w_reviver, w_revive_tool )
 
 	reviveTrigger = e_revivee.revivetrigger;
 
-	e_revivee waittill("disconnect");	
-	
+	e_revivee waittill("disconnect");
+
 	if( isdefined( reviveTrigger ) )
 	{
 		reviveTrigger delete();
 	}
 	self laststand::cleanup_suicide_hud();
-	
+
 	if( isdefined( self.reviveProgressBar ) )
 	{
 		self.reviveProgressBar hud::destroyElem();
 	}
-	
+
 	if( isdefined( self.reviveTextHud ) )
 	{
 		self.reviveTextHud destroy();
 	}
-	
+
 	if ( isdefined ( w_reviver ) && isdefined( w_revive_tool ) ) // PORTIZ 8/4/16: support alternate revives that don't require a tool
 	{
 		self revive_give_back_weapons( w_reviver, w_revive_tool );
@@ -469,12 +469,12 @@ function laststand_clean_up_reviving_any( e_revivee )
 	{
 		self.is_reviving_any = 0;
 	}
-	
+
 	if( isdefined( self.reviveProgressBar ) )
 	{
 		self.reviveProgressBar hud::destroyElem();
 	}
-	
+
 	if( isdefined( self.reviveTextHud ) )
 	{
 		self.reviveTextHud destroy();
@@ -497,9 +497,9 @@ function laststand_give_pistol()
 		self GiveMaxAmmo( self.laststandpistol );
 		self SwitchToWeapon( self.laststandpistol );
 	}
-	
-	// queue up a second switch to make sure it succeeds. 
-	self thread wait_switch_weapon( 1, self.laststandpistol ); 
+
+	// queue up a second switch to make sure it succeeds.
+	self thread wait_switch_weapon( 1, self.laststandpistol );
 }
 
 function wait_switch_weapon( n_delay, w_weapon )
@@ -509,7 +509,7 @@ function wait_switch_weapon( n_delay, w_weapon )
 	self endon ("zombified");
 	self endon ("disconnect");
 
-	wait n_delay; 	
+	wait n_delay;
 	self SwitchToWeapon( w_weapon );
 }
 
@@ -524,18 +524,18 @@ function Laststand_Bleedout( delay )
 
 	if ( IS_TRUE( self.is_zombie ) || IS_TRUE( self.no_revive_trigger ) )
 	{
-		self notify("bled_out"); 
+		self notify("bled_out");
 		util::wait_network_frame(); //to guarantee the notify gets sent and processed before the rest of this script continues to turn the guy into a spectator
-	
+
 		self bleed_out();
-	
+
 		return;
 	}
 
 	//self PlayLoopSound("heart_beat",delay);	// happens on client now DSL
 
 	// Notify client that we're in last stand.
-	
+
 	self clientfield::set( "zmbLastStand", 1 );
 
 	self.bleedout_time = delay;
@@ -564,15 +564,15 @@ function Laststand_Bleedout( delay )
 	}
 
 	visionset_mgr::activate( "visionset", ZM_DEATH_VISIONSET, self, delay * 0.5 );
-	
+
 	while ( self.bleedout_time > 0 )
 	{
 		self.bleedout_time -= 1;
 		level clientfield::increment( "laststand_update" + ( self GetEntityNumber() ), self.bleedout_time + 1 );
 		wait( 1 );
 	}
-	
-	
+
+
 	//VisionSetLastStand( "zombie_death", delay * 0.5 );
 
 	//CODER_MOD: TOMMYK 07/13/2008
@@ -580,12 +580,12 @@ function Laststand_Bleedout( delay )
 	{
 		wait( 0.1 );
 	}
-	
-	self notify("bled_out"); 
+
+	self notify("bled_out");
 	util::wait_network_frame(); //to guarantee the notify gets sent and processed before the rest of this script continues to turn the guy into a spectator
 
 	self bleed_out();
-	
+
 }
 
 
@@ -595,25 +595,25 @@ function bleed_out()
 	if( isdefined( self.reviveTrigger ) )
 		self.reviveTrigger delete();
 	self.reviveTrigger=undefined;
-	
+
 	self clientfield::set( "zmbLastStand", 0 );
 	//self AddPlayerStat( "zombie_deaths", 1 );
 	self zm_stats::increment_client_stat( "deaths" );
 	self zm_stats::increment_player_stat( "deaths" );
 	self RecordPlayerDeathZombies();
-	self.last_bleed_out_time = GetTime(); 
+	self.last_bleed_out_time = GetTime();
 
 	self zm_equipment::take();
 	self zm_hero_weapon::take_hero_weapon();
 
 	level clientfield::increment( "laststand_update" + ( self GetEntityNumber() ), 1 );
-		
+
 	demo::bookmark( "zm_player_bledout", gettime(), self, undefined, 1 );
-	
+
 	level notify("bleed_out", self.characterindex);
 	//clear the revive icon
 	self UndoLastStand();
-	
+
 	visionset_mgr::deactivate( "visionset", ZM_LASTSTAND_VISIONSET, self );
 	visionset_mgr::deactivate( "visionset", ZM_DEATH_VISIONSET, self );
 
@@ -636,7 +636,7 @@ function suicide_trigger_spawn()
 	radius = GetDvarint( "revive_trigger_radius" );
 
 	self.suicidePrompt = newclientHudElem( self );
-	
+
 	self.suicidePrompt.alignX = "center";
 	self.suicidePrompt.alignY = "middle";
 	self.suicidePrompt.horzAlign = "center";
@@ -667,35 +667,35 @@ function suicide_trigger_think()
 	self endon ("fake_death");
 	level endon("end_game");
 	level endon("stop_suicide_trigger");
-	
+
 	//in case the game ends while this is running
 	self thread laststand::clean_up_suicide_hud_on_end_game();
-	
+
 	//in case user is holding UseButton while this is running
 	self thread laststand::clean_up_suicide_hud_on_bled_out();
-	
+
 	// If player was holding use while going into last stand, wait for them to release it
 	while ( self UseButtonPressed() )
 	{
 		wait ( 1 );
 	}
-	
+
 	if(!isdefined(self.suicidePrompt))
 	{
 		return;
 	}
-	
+
 	while( true )
 	{
 		wait ( 0.1 );
-		
+
 		if(!isdefined(self.suicidePrompt))
 		{
 			continue;
 		}
-					
+
 		self.suicidePrompt setText( &"ZOMBIE_BUTTON_TO_SUICIDE" );
-		
+
 		if ( !self is_suiciding() )
 		{
 			continue;
@@ -718,7 +718,7 @@ function suicide_trigger_think()
 
 			//Stat Tracking
 			self zm_stats::increment_client_stat( "suicides" );
-			
+
 			self bleed_out();
 
 			return;
@@ -733,15 +733,15 @@ function suicide_do_suicide(duration)
 {
 	level endon("end_game");
 	level endon("stop_suicide_trigger");
-	
+
 	suicideTime = duration; //1.5;
 
 	timer = 0;
 
 	suicided = false;
-	
+
 	self.suicidePrompt setText( "" );
-	
+
 	if( !isdefined(self.suicideProgressBar) )
 	{
 		self.suicideProgressBar = self hud::createPrimaryProgressBar();
@@ -751,7 +751,7 @@ function suicide_do_suicide(duration)
 	{
 		self.suicideTextHud = newclientHudElem( self );
 	}
-	
+
 	self.suicideProgressBar hud::updateBar( 0.01, 1 / suicideTime );
 
 	self.suicideTextHud.alignX = "center";
@@ -770,7 +770,7 @@ function suicide_do_suicide(duration)
 	self.suicideTextHud.color = ( 1.0, 1.0, 1.0 );
 	self.suicideTextHud.hidewheninmenu = true;
 	self.suicideTextHud setText( &"ZOMBIE_SUICIDING" );
-	
+
 	while( self is_suiciding() )
 	{
 		WAIT_SERVER_FRAME;
@@ -782,17 +782,17 @@ function suicide_do_suicide(duration)
 			break;
 		}
 	}
-	
+
 	if( isdefined( self.suicideProgressBar ) )
 	{
 		self.suicideProgressBar hud::destroyElem();
 	}
-	
+
 	if( isdefined( self.suicideTextHud ) )
 	{
 		self.suicideTextHud destroy();
 	}
-	
+
 	if ( isDefined(self.suicidePrompt) )
 	{
 		self.suicidePrompt setText( &"ZOMBIE_BUTTON_TO_SUICIDE" );
@@ -811,12 +811,12 @@ function can_suicide()
 	{
 		return false;
 	}
-		
+
 	if ( !isdefined( self.suicidePrompt ) )
 	{
 		return false;
 	}
-	
+
 	if ( IS_TRUE( self.is_zombie ) )
 	{
 		return false;
@@ -826,12 +826,12 @@ function can_suicide()
 	{
 		return false;
 	}
-		
+
 	return true;
 }
 
 function is_suiciding( revivee )
-{	
+{
 	return ( self UseButtonPressed() && can_suicide() );
 }
 
@@ -873,7 +873,7 @@ function revive_trigger_think( t_secondary )
 	self endon ( "stop_revive_trigger" );
 	level endon("end_game");
 	self endon( "death" );
-	
+
 	while ( true )
 	{
 		WAIT_SERVER_FRAME;
@@ -885,22 +885,22 @@ function revive_trigger_think( t_secondary )
 		else
 		{
 			t_revive = self.revivetrigger;
-		}		
-		
+		}
+
 		t_revive setHintString( "" );
 
 		for ( i = 0; i < level.players.size; i++ )
 		{
 			n_depth = 0;
-			n_depth = self depthinwater();			
-			
+			n_depth = self depthinwater();
+
 			if( isdefined( t_secondary ) )
 			{
 				// ignore revive trigger touch check but use touch check with secondary
 				if ( ( level.players[i] can_revive( self, true, true ) && level.players[i] IsTouching( t_revive ) ) || n_depth > 20 )
 				{
 					t_revive setReviveHintString( &"ZOMBIE_BUTTON_TO_REVIVE_PLAYER", self.team );
-					break;			
+					break;
 				}
 			}
 			else
@@ -912,31 +912,31 @@ function revive_trigger_think( t_secondary )
 					// the radius once one of them faces the revivee, even if the others
 					// are facing away. Either we have to display the hints manually here
 					// (making sure to prioritize against any other hints from nearby objects),
-					// or we need a new combined radius+lookat trigger type.						
+					// or we need a new combined radius+lookat trigger type.
 					t_revive setReviveHintString( &"ZOMBIE_BUTTON_TO_REVIVE_PLAYER", self.team );
-					break;			
+					break;
 				}
-			}			
-		}		
+			}
+		}
 
 		for ( i = 0; i < level.players.size; i++ )
 		{
 			e_reviver = level.players[i];
-			
+
 			if( self == e_reviver || !e_reviver is_reviving( self, t_secondary ) )
 			{
 				continue;
 			}
-			
+
 			// PORTIZ 8/4/16: if we're using a special revive override, check to see if the revive tool should be used
 			if ( !isdefined( e_reviver.s_revive_override_used ) || e_reviver.s_revive_override_used.b_use_revive_tool )
 			{
-				w_revive_tool = level.weaponReviveTool; 
+				w_revive_tool = level.weaponReviveTool;
 				if ( isdefined(e_reviver.weaponReviveTool) )
 				{
-					w_revive_tool = e_reviver.weaponReviveTool; 
+					w_revive_tool = e_reviver.weaponReviveTool;
 				}
-				
+
 				// give the syrette
 				w_reviver = e_reviver GetCurrentWeapon();
 				assert( isdefined( w_reviver ) );
@@ -945,11 +945,11 @@ function revive_trigger_think( t_secondary )
 					//already reviving somebody
 					continue;
 				}
-	
+
 				e_reviver GiveWeapon( w_revive_tool );
 				e_reviver SwitchToWeapon( w_revive_tool );
 				e_reviver SetWeaponAmmoStock( w_revive_tool, 1 );
-	
+
 				e_reviver thread revive_give_back_weapons_when_done( w_reviver, w_revive_tool, self );
 			}
 			else
@@ -957,19 +957,19 @@ function revive_trigger_think( t_secondary )
 				w_reviver = undefined;
 				w_revive_tool = undefined; // make sure it's undefined after previous iteration of this loop
 			}
-			
+
 			//CODER_MOD: TOMMY K
 			b_revive_successful = e_reviver revive_do_revive( self, w_reviver, w_revive_tool, t_secondary );
-			
+
 			e_reviver notify("revive_done");
-			
+
 			//PI CHANGE: player couldn't jump - allow this again now that they are revived
 			if ( IsPlayer( self ) )
 			{
 				self AllowJump(true);
 			}
 			//END PI CHANGE
-			
+
 			self.laststand = undefined;
 
 			if( b_revive_successful )
@@ -981,10 +981,10 @@ function revive_trigger_think( t_secondary )
 						self [[ func ]]();
 					}
 				}
-				
+
 				self thread revive_success( e_reviver );
 				self laststand::cleanup_suicide_hud();
-					
+
 				self notify( "stop_revive_trigger" ); // will endon primary or secondary as necessary
 				return;
 			}
@@ -999,28 +999,28 @@ function revive_give_back_weapons_wait( e_reviver, e_revivee )
 	e_revivee endon ( "stop_revive_trigger" );
 	level endon("end_game");
 	e_revivee endon( "death" );
-	
+
 	e_reviver waittill("revive_done");
 }
 
 function revive_give_back_weapons_when_done( w_reviver, w_revive_tool, e_revivee )
 {
-	revive_give_back_weapons_wait( self, e_revivee ); 
-	
+	revive_give_back_weapons_wait( self, e_revivee );
+
 	self revive_give_back_weapons( w_reviver, w_revive_tool );
 }
 
 function revive_give_back_weapons( w_reviver, w_revive_tool )
 {
 	// take the syrette
-	self TakeWeapon( w_revive_tool ); 
+	self TakeWeapon( w_revive_tool );
 
 	// Don't switch to their old primary weapon if they got put into last stand while trying to revive a teammate
 	if ( self laststand::player_is_in_laststand() )
 	{
 		return;
 	}
-	
+
 	if( IsDefined( level.revive_give_back_weapons_custom_func ) && self [[ level.revive_give_back_weapons_custom_func ]] ( w_reviver ) )
 	{
 		return;
@@ -1030,7 +1030,7 @@ function revive_give_back_weapons( w_reviver, w_revive_tool )
 	{
 		self zm_weapons::switch_back_primary_weapon( w_reviver );
 	}
-	else 
+	else
 	{
 		self zm_weapons::switch_back_primary_weapon();
 	}
@@ -1054,7 +1054,7 @@ function can_revive( e_revivee, ignore_sight_checks = false, ignore_touch_checks
 		return false;
 	}
 
-	if( self.team != e_revivee.team ) 
+	if( self.team != e_revivee.team )
 	{
 		return false;
 	}
@@ -1073,7 +1073,7 @@ function can_revive( e_revivee, ignore_sight_checks = false, ignore_touch_checks
 	{
 		return false;
 	}
-	
+
 	if ( IS_TRUE( level.can_revive_use_depthinwater_test ) && e_revivee depthinwater() > 10 )
 	{
 		return true;
@@ -1114,16 +1114,16 @@ function can_revive( e_revivee, ignore_sight_checks = false, ignore_touch_checks
 			return false;
 		}
 
-		if ( !SightTracePassed( self.origin + ( 0, 0, 50 ), e_revivee.origin + ( 0, 0, 30 ), false, undefined ) )				
+		if ( !SightTracePassed( self.origin + ( 0, 0, 50 ), e_revivee.origin + ( 0, 0, 30 ), false, undefined ) )
 		{
 			return false;
 		}
 
-		//chrisp - fix issue where guys can sometimes revive thru a wall	
+		//chrisp - fix issue where guys can sometimes revive thru a wall
 		if ( !bullettracepassed( self.origin + (0, 0, 50), e_revivee.origin + (0, 0, 30), false, undefined ) )
 		{
 			return false;
-		}	
+		}
 	}
 
 	//iprintlnbold("REVIVE IS GOOD");
@@ -1136,17 +1136,17 @@ function is_reviving( e_revivee, t_secondary ) // self = reviver player
 	{
 		return true;
 	}
-		
+
 	if( isdefined( t_secondary ) )
 	{
 		return( self UseButtonPressed() && self can_revive( e_revivee, true, true ) && self IsTouching( t_secondary ) );
-	}		
-	
+	}
+
 	return ( self UseButtonPressed() && can_revive( e_revivee ) );
 }
 
 function is_reviving_any()
-{	
+{
 	return IS_TRUE( self.is_reviving_any );
 }
 
@@ -1166,8 +1166,8 @@ function revive_get_revive_time( e_revivee )
 	{
 		reviveTime = self [[self.get_revive_time]](e_revivee);
 	}
-	
-	return reviveTime;	
+
+	return reviveTime;
 }
 
 // self = reviver
@@ -1179,15 +1179,15 @@ function revive_do_revive( e_revivee, w_reviver, w_revive_tool, t_secondary )
 
 	timer = 0;
 	revived = false;
-	
+
 	//CODER_MOD: TOMMYK 07/13/2008
 	e_revivee.revivetrigger.beingRevived = 1;
 	name = level.player_name_directive[self GetEntityNumber()];
 	e_revivee.revive_hud setText( &"ZOMBIE_PLAYER_IS_REVIVING_YOU", name );
 	e_revivee laststand::revive_hud_show_n_fade( 3.0 );
-	
+
 	e_revivee.revivetrigger setHintString( "" );
-	
+
 	if ( IsPlayer( e_revivee ) )
 	{
 		e_revivee startrevive( self );
@@ -1202,7 +1202,7 @@ function revive_do_revive( e_revivee, w_reviver, w_revive_tool, t_secondary )
 	{
 		self.reviveTextHud = newclientHudElem( self );
 	}
-	
+
 	self thread laststand_clean_up_on_disconnect( e_revivee, w_reviver, w_revive_tool );
 
 	if ( !isdefined( self.is_reviving_any ) )
@@ -1211,7 +1211,7 @@ function revive_do_revive( e_revivee, w_reviver, w_revive_tool, t_secondary )
 	}
 	self.is_reviving_any++;
 	self thread laststand_clean_up_reviving_any( e_revivee );
-	
+
 	if( isdefined(self.reviveProgressBar) )
 	{
 		self.reviveProgressBar hud::updateBar( 0.01, 1 / reviveTime );
@@ -1233,10 +1233,10 @@ function revive_do_revive( e_revivee, w_reviver, w_revive_tool, t_secondary )
 	self.reviveTextHud.color = ( 1.0, 1.0, 1.0 );
 	self.reviveTextHud.hidewheninmenu = true;
 	self.reviveTextHud setText( &"ZOMBIE_REVIVING" );
-	
+
 	//stat tracking - failed revive
 	self thread check_for_failed_revive(e_revivee);
-	
+
 	while( self is_reviving( e_revivee, t_secondary ) )
 	{
 		WAIT_SERVER_FRAME;
@@ -1246,7 +1246,7 @@ function revive_do_revive( e_revivee, w_reviver, w_revive_tool, t_secondary )
 		{
 			break;
 		}
-		
+
 		if( isdefined( e_revivee.revivetrigger.auto_revive ) && e_revivee.revivetrigger.auto_revive == true )
 		{
 			break;
@@ -1258,17 +1258,17 @@ function revive_do_revive( e_revivee, w_reviver, w_revive_tool, t_secondary )
 			break;
 		}
 	}
-	
+
 	if( isdefined( self.reviveProgressBar ) )
 	{
 		self.reviveProgressBar hud::destroyElem();
 	}
-	
+
 	if( isdefined( self.reviveTextHud ) )
 	{
 		self.reviveTextHud destroy();
 	}
-	
+
 	if( isdefined( e_revivee.revivetrigger.auto_revive ) && e_revivee.revivetrigger.auto_revive == true )
 	{
 		// ww: just fall through this part, no stoprevive
@@ -1293,7 +1293,7 @@ function revive_do_revive( e_revivee, w_reviver, w_revive_tool, t_secondary )
 	{
 		e_revivee thread checkforbleedout( self );
 	}
-	
+
 	return revived;
 }
 
@@ -1314,7 +1314,7 @@ function checkforbleedout( player )
 /*
 	self waittill( "bled_out" );
 */
-	
+
 	// Only in classic mode
 	if( isdefined(player) && zm_utility::is_Classic() )
 	{
@@ -1342,10 +1342,10 @@ function auto_revive( reviver, dont_enable_weapons )
 					break;
 				}
 				util::wait_network_frame();
-	
+
 			}
 		}
-		
+
 		if( isdefined( self.revivetrigger ) )
 		{
 			self.revivetrigger.auto_trigger = false;
@@ -1358,7 +1358,7 @@ function auto_revive( reviver, dont_enable_weapons )
 	self zm_perks::perk_set_max_health_if_jugg( "health_reboot", true, false );
 
 	self clientfield::set( "zmbLastStand", 0 );
-	
+
 	self notify( "stop_revive_trigger" );
 	if(isdefined(self.revivetrigger))
 	{
@@ -1371,10 +1371,10 @@ function auto_revive( reviver, dont_enable_weapons )
 	visionset_mgr::deactivate( "visionset", ZM_LASTSTAND_VISIONSET, self );
 	visionset_mgr::deactivate( "visionset", ZM_DEATH_VISIONSET, self );
 
-	self notify("clear_red_flashing_overlay"); 
+	self notify("clear_red_flashing_overlay");
 
 	self AllowJump( true );
-	
+
 	self util::delay( N_REVIVE_VISIBILITY_DELAY, "death", &set_ignoreme, false );
 	self.laststand = undefined;
 
@@ -1410,7 +1410,7 @@ function remote_revive( reviver )
 	if ( !self laststand::player_is_in_laststand() )
 	{
 		return;
-	}	
+	}
 	self playsound( "zmb_character_remote_revived" );
 	self thread auto_revive( reviver );
 
@@ -1425,21 +1425,21 @@ function revive_success( reviver, b_track_stats = true )
 		self notify ( "player_revived", reviver );
 		return;
 	}
-	
+
 	if( IS_TRUE( b_track_stats ) )
 	{
 		demo::bookmark( "zm_player_revived", gettime(), reviver, self );
 	}
-	
+
 	self notify ( "player_revived", reviver );
 	reviver notify ( "player_did_a_revive", self );
 	self reviveplayer();
-	
+
 	// Make sure max health is set back to default
 	self zm_perks::perk_set_max_health_if_jugg( "health_reboot", true, false );
 
 	//CODER_MOD: TOMMYK 06/26/2008 - For coop scoreboards
-	
+
 	//don't do this for Grief when the rounds reset
 	if( !IS_TRUE(level.isresetting_grief) && IS_TRUE( b_track_stats ) )
 	{
@@ -1448,33 +1448,33 @@ function revive_success( reviver, b_track_stats = true )
 		reviver zm_stats::increment_client_stat( "revives" );
 		reviver zm_stats::increment_player_stat( "revives" );
 		reviver xp_revive_once_per_round( self );
-		self RecordPlayerReviveZombies( reviver );		
+		self RecordPlayerReviveZombies( reviver );
 		reviver.upgrade_fx_origin = self.origin;
 	}
-	
+
 	if( IS_TRUE( b_track_stats ) )
 	{
-		reviver thread check_for_sacrifice(); //stat tracking 
+		reviver thread check_for_sacrifice(); //stat tracking
 	}
-	
+
 	// CODER MOD: TOMMY K - 07/30/08
 	//reviver thread call_overloaded_func( "maps\_arcademode", "arcademode_player_revive" );
-					
+
 	//CODER_MOD: Jay (6/17/2008): callback to revive challenge
 	if( isdefined( level.missionCallbacks ) )
 	{
 		// removing coop challenges for now MGORDON
-		//maps\_challenges_coop::doMissionCallback( "playerRevived", reviver ); 
-	}	
-	
+		//maps\_challenges_coop::doMissionCallback( "playerRevived", reviver );
+	}
+
 	self clientfield::set( "zmbLastStand", 0 );
-	
+
 	self.revivetrigger delete();
 	self.revivetrigger = undefined;
 	self laststand::cleanup_suicide_hud();
 
 	self util::delay( N_REVIVE_VISIBILITY_DELAY, "death", &set_ignoreme, false );
-  
+
 	visionset_mgr::deactivate( "visionset", ZM_LASTSTAND_VISIONSET, self );
 	visionset_mgr::deactivate( "visionset", ZM_DEATH_VISIONSET, self );
 
@@ -1489,7 +1489,7 @@ function xp_revive_once_per_round( player_being_revived )
 	{
 		self.number_revives_per_round = [];
 	}
-	
+
 	if( !isdefined(self.number_revives_per_round[player_being_revived.characterIndex]) )
 	{
 		self.number_revives_per_round[player_being_revived.characterIndex] = 0;
@@ -1581,11 +1581,11 @@ function laststand_getup_damage_watcher()
 // a sacrifice is when a player sucessfully revives another player, but dies afterwards
 function check_for_sacrifice()
 {
-	self util::delay_notify("sacrifice_denied",1); //dying within 1 second of reviving another player is considered to be a 'sacrifice' 
+	self util::delay_notify("sacrifice_denied",1); //dying within 1 second of reviving another player is considered to be a 'sacrifice'
 	self endon("sacrifice_denied");
-	
+
 	self waittill("player_downed");
-	
+
 	//stat tracking
 	self zm_stats::increment_client_stat( "sacrifices" );
 	self zm_stats::increment_player_stat( "sacrifices" );
@@ -1593,20 +1593,20 @@ function check_for_sacrifice()
 }
 
 //when a player is downed, any player that starts/stops reviving him will fail the revive if the player bleeds out
-function check_for_failed_revive(e_revivee) 
-{	
+function check_for_failed_revive(e_revivee)
+{
 	self endon("disconnect");
 
 	e_revivee endon("disconnect");	 //end if the player being revived disconnects
 	e_revivee endon("player_suicide");
-	
+
 	self notify("checking_for_failed_revive"); //to prevent stacking this thread if the same player starts/stops reviving several times while the player is downed
 	self endon("checking_for_failed_revive");
-	
+
 	e_revivee endon("player_revived"); //end if the player gets revived
-		
-	e_revivee waittill("bled_out"); // the player being revived bled out 
-	
+
+	e_revivee waittill("bled_out"); // the player being revived bled out
+
 	//stat tracking
 	self zm_stats::increment_client_stat( "failed_revives" );
 	self zm_stats::increment_player_stat( "failed_revives" );
@@ -1631,11 +1631,11 @@ function register_revive_override( func_is_reviving, func_can_revive = undefined
 	{
 		self.a_s_revive_overrides = [];
 	}
-	
+
 	s_revive_override = SpawnStruct();
-	
+
 	s_revive_override.func_is_reviving = func_is_reviving;
-	
+
 	if ( isdefined( func_can_revive ) )
 	{
 		s_revive_override.func_can_revive = func_can_revive;
@@ -1644,11 +1644,11 @@ function register_revive_override( func_is_reviving, func_can_revive = undefined
 	{
 		s_revive_override.func_can_revive = func_is_reviving; // in some cases (like for zm_bgb_near_death_experience) these two cases will be the same
 	}
-	
+
 	s_revive_override.b_use_revive_tool = b_use_revive_tool;
-	
+
 	self.a_s_revive_overrides[ self.a_s_revive_overrides.size ] = s_revive_override;
-	
+
 	return s_revive_override; // return the struct so it can be deregistered later
 }
 
@@ -1672,7 +1672,7 @@ function can_revive_via_override( e_revivee ) // self == reviver player
 			}
 		}
 	}
-	
+
 	return false;
 }
 
@@ -1689,7 +1689,7 @@ function is_reviving_via_override( e_revivee ) // self == reviver player
 			}
 		}
 	}
-	
+
 	self.s_revive_override_used = undefined;
 	return false;
 }
