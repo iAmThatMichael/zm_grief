@@ -1248,7 +1248,7 @@ function init_levelvars()
 
 	zombie_utility::set_zombie_var( "zombie_flame_dmg_point_delay",		500 );
 
-	zombie_utility::set_zombie_var( "zombify_player", 					false );	// Default to not zombify the player till further support
+	zombie_utility::set_zombie_var( "zombify_player", 					true );	// Default to not zombify the player till further support || DUKIP - enabled for Turned mechanic
 
 	if ( IsSplitScreen() )
 	{
@@ -4783,7 +4783,9 @@ function zombify_player() // self = player
 	self.is_zombie = true;
 	self.zombification_time = GetTime();
 
-	self.team = level.zombie_team;
+	//self.team = level.zombie_team;
+	self SetTeam( level.zombie_team ); // DUKIP - update the team
+
 	self notify( "zombified" );
 
 	if( IsDefined( self.revivetrigger ) )

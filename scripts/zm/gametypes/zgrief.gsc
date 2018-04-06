@@ -44,6 +44,8 @@ function main()
 	callback::on_disconnect( &on_player_disconnect );
 	callback::on_laststand( &on_player_laststand );
 	callback::on_spawned( &on_player_spawned );
+
+	//zm_perks::register_revive_success_perk_func( &on_revive_func );
 }
 
 function onPrecacheGameType()
@@ -89,6 +91,11 @@ function on_player_disconnect()
 function on_player_laststand()
 {
 	IPrintLnBold( self.name + " went down." );
+}
+// TODO: want to override reviving on opp team to kill the player
+function on_revive_func()
+{
+
 }
 
 function on_player_spawned()
