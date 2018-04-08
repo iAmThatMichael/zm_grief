@@ -1248,7 +1248,7 @@ function init_levelvars()
 
 	zombie_utility::set_zombie_var( "zombie_flame_dmg_point_delay",		500 );
 
-	zombie_utility::set_zombie_var( "zombify_player", 					true );	// Default to not zombify the player till further support || DUKIP - enabled for Turned mechanic
+	zombie_utility::set_zombie_var( "zombify_player", 					false );	// Default to not zombify the player till further support || DUKIP - something to note in case of doing anything Turned-y related
 
 	if ( IsSplitScreen() )
 	{

@@ -204,7 +204,7 @@ function grief_end_round_logic()
 	// reset values
 	if ( IsString( level.grief_team_dead ) )
 	{
-		IPrintLnBold( "A team has died, the winner is " + ( level.grief_team_dead === "A" ? "B" : "A" ) + "!" );
+		IPrintLnBold( "A team has died, the winner is " + ( level.grief_team_dead != "A" ? "A" : "B" ) + "!" );
 		level notify( "end_game" );
 	}
 	else
@@ -217,18 +217,18 @@ function on_friendly_fire_damage( eInflictor, eAttacker, iDamage, iDFlags, sMean
 {
 	if ( !isdefined( eAttacker ) )
 		return;
-	// don't allow damage from self OR same grief team
+	// don't allow damage from self
 	if ( self == eAttacker )
 		return;
+	// don't allow damage from same grief team
 	if ( self.grief_team == eAttacker.grief_team )
 		return;
+	// make sure it's a player
 	if ( IsPlayer( eAttacker ) )
 	{
-		switch ( sMeansOfDeath )
-		{
-			case "MOD_MELEE":
-				self ApplyKnockBack( iDamage, vDir );
-				break;
-		}
+		// for melee usage
+		if ( sMeansOfDeath == "MOD_MELEE" )
+			self ApplyKnockBack( iDamage, vDir );
+		// TODO: other modifiers?
 	}
 }
