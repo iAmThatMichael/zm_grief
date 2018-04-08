@@ -54,7 +54,7 @@
 #namespace zm_powerups;
 
 function init()
-{	
+{
 	// powerup Vars
 	zombie_utility::set_zombie_var( "zombie_insta_kill",					0, undefined, undefined, true );
 	zombie_utility::set_zombie_var( "zombie_point_scalar",					1, undefined, undefined, true );
@@ -91,12 +91,12 @@ function init()
 	level._effect["powerup_grabbed_caution"]		= "zombie/fx_powerup_grab_caution_zmb";
 
 	init_powerups();
-	
+
 	if(!level.enable_magic)
 	{
 		return;
 	}
-	
+
 	thread watch_for_drop();
 }
 
@@ -105,7 +105,7 @@ function init()
 function init_powerups()
 {
 	level flag::init( "zombie_drop_powerups" );	// As long as it's set, powerups will be able to spawn
-	
+
 	if(IS_TRUE(level.enable_magic))
 	{
 		level flag::set( "zombie_drop_powerups" );
@@ -117,15 +117,15 @@ function init_powerups()
 	}
 
 	//Random Drops
-	
+
 	//not sure if there's a better place to put this function call
 	add_zombie_powerup( "insta_kill_ug",		"zombie_skull",					&"ZOMBIE_POWERUP_INSTA_KILL",	&func_should_never_drop, POWERUP_ONLY_AFFECTS_GRABBER, !POWERUP_ANY_TEAM, !POWERUP_ZOMBIE_GRABBABLE, undefined, CLIENTFIELD_POWERUP_INSTANT_KILL_UG, "zombie_powerup_insta_kill_ug_time", "zombie_powerup_insta_kill_ug_on", VERSION_SHIP );
-	
+
 	if(isDefined(level.level_specific_init_powerups))
 	{
 		[[level.level_specific_init_powerups]]();
 	}
-	
+
 	// Randomize the order
 	randomize_powerups();
 	level.zombie_powerup_index = 0;
@@ -133,7 +133,7 @@ function init_powerups()
 
 	// Rare powerups
 	level.rare_powerups_active = 0;
-	
+
 	//AUDIO: Prevents the long firesale vox from playing more than once
 	level.firesale_vox_firstime = false;
 
@@ -157,7 +157,7 @@ function set_weapon_ignore_max_ammo( weapon )
 	{
 		level.zombie_weapons_no_max_ammo = [];
 	}
-	
+
 	level.zombie_weapons_no_max_ammo[ weapon ] = 1;
 }
 
@@ -167,7 +167,7 @@ function powerup_hud_monitor( )
 	level flag::wait_till( "start_zombie_round_logic" );
 
 	// race mode has no global powerup drops for now
-	if(isDefined(level.current_game_module) && level.current_game_module == 2) 
+	if(isDefined(level.current_game_module) && level.current_game_module == 2)
 	{
 		return;
 	}
@@ -204,7 +204,7 @@ function powerup_hud_monitor( )
 
 		flashing_timers[flashing_timers.size] = flashing_timer;
 		flashing_values[flashing_values.size] = flashing_value;
-		
+
 		flashing_is_on = !flashing_is_on;
 	}
 
@@ -241,7 +241,6 @@ function powerup_hud_monitor( )
 			{
 				player = players[playerIndex];
 
-		
 				if (isdefined(level.powerup_player_valid))
 				{
 					if ( ! [[level.powerup_player_valid]]( player ))
@@ -253,7 +252,9 @@ function powerup_hud_monitor( )
 				on_name = client_fields[client_field_keys[client_field_key_index]].on_name;
 				powerup_timer = undefined;
 				powerup_on = undefined;
-
+				// DUKIP - stop the clientfield from being set on a ZM-player
+				if ( player.team == level.zombie_team )
+					continue;
 				// if solo, pass in player.var
 				if ( client_fields[client_field_keys[client_field_key_index]].only_affects_grabber )
 				{
@@ -272,7 +273,7 @@ function powerup_hud_monitor( )
 				{
 					powerup_timer = level.zombie_vars[time_name];
 					powerup_on = level.zombie_vars[on_name];
-				}				
+				}
 
 				if ( IsDefined( powerup_timer ) && IsDefined( powerup_on ) )
 				{
@@ -410,7 +411,7 @@ function minigun_no_drop()
 			return true; // not a solo game, powerup is invalid
 		}
 	}
-	
+
 	return false;
 }
 
@@ -420,7 +421,7 @@ function watch_for_drop()
 	level flag::wait_till( "start_zombie_round_logic" );
 	level flag::wait_till( "begin_spawning" );
 	WAIT_SERVER_FRAME;
-	
+
 	players = GetPlayers();
 	score_to_drop = ( players.size * level.zombie_vars["zombie_score_start_"+players.size+"p"] ) + level.zombie_vars["zombie_powerup_drop_increment"];
 
@@ -480,11 +481,11 @@ function add_zombie_powerup( powerup_name, model_name, hint, func_should_drop_wi
 	{
 		return;
 	}
-	
+
 	if( !IsDefined( level.zombie_powerup_array ) )
 	{
 		level.zombie_powerup_array = [];
-	}	
+	}
 
 	struct = SpawnStruct();
 
@@ -501,11 +502,11 @@ function add_zombie_powerup( powerup_name, model_name, hint, func_should_drop_wi
 	struct.only_affects_grabber = only_affects_grabber;
 	struct.any_team = any_team;
 	struct.zombie_grabbable = zombie_grabbable;
-	
+
 	struct.hash_id = HashString(powerup_name);
-	
+
 	struct.player_specific = player_specific;
-		
+
 	struct.can_pick_up_in_last_stand = true;
 
 	if( IsDefined( fx ) )
@@ -516,7 +517,7 @@ function add_zombie_powerup( powerup_name, model_name, hint, func_should_drop_wi
 	level.zombie_powerups[powerup_name] = struct;
 	level.zombie_powerup_array[level.zombie_powerup_array.size] = powerup_name;
 	add_zombie_special_drop( powerup_name );
-	
+
 	if( IsDefined( client_field_name ) )
 	{
 		clientfield::register( "toplayer", client_field_name, clientfield_version, 2, "int" );
@@ -527,7 +528,7 @@ function add_zombie_powerup( powerup_name, model_name, hint, func_should_drop_wi
 }
 
 function powerup_set_can_pick_up_in_last_stand( powerup_name, b_can_pick_up )
-{	
+{
 	level.zombie_powerups[ powerup_name ].can_pick_up_in_last_stand = b_can_pick_up;
 }
 
@@ -537,7 +538,7 @@ function powerup_set_prevent_pick_up_if_drinking( powerup_name, b_prevent_pick_u
 }
 
 function powerup_set_player_specific( powerup_name, b_player_specific = POWERUP_FOR_SPECIFIC_PLAYER )
-{	
+{
 	level.zombie_powerups[ powerup_name ].player_specific = b_player_specific;
 }
 
@@ -555,7 +556,7 @@ function add_zombie_special_drop( powerup_name )
 	{
 		level.zombie_special_drop_array = [];
 	}
-	
+
 	level.zombie_special_drop_array[ level.zombie_special_drop_array.size ] = powerup_name;
 }
 
@@ -588,28 +589,28 @@ function powerup_drop(drop_point)
 	if( isdefined( level.custom_zombie_powerup_drop ) )
 	{
 		b_outcome = [[ level.custom_zombie_powerup_drop ]]( drop_point );
-		
+
 		if( IS_TRUE( b_outcome ) )
 		{
-			return;	
+			return;
 		}
 	}
-	
+
 	if( level.powerup_drop_count >= level.zombie_vars["zombie_powerup_drop_max_per_round"] )
 	{
 		return;
 	}
-	
+
 	if( !isDefined(level.zombie_include_powerups) || level.zombie_include_powerups.size == 0 )
 	{
 		return;
 	}
-	
+
 	// some guys randomly drop, but most of the time they check for the drop flag
 	rand_drop = randomint(100);
-	
+
 	if( bgb::is_team_enabled( "zm_bgb_power_vacuum" ) && rand_drop < 20 )
-	{	
+	{
 		debug = "zm_bgb_power_vacuum";
 	}
 	else if (rand_drop > 2)
@@ -624,17 +625,17 @@ function powerup_drop(drop_point)
 	else
 	{
 		debug = "random";
-	}	
+	}
 
 	// Never drop unless in the playable area
 	playable_area = getentarray("player_volume","script_noteworthy");
-	
+
 	// This needs to go above the network_safe_spawn because that has a wait.
 	//	Otherwise, multiple threads could attempt to drop powerups.
 	level.powerup_drop_count++;
 
 	powerup = zm_net::network_safe_spawn( "powerup", 1, "script_model", drop_point + (0,0,40));
-	
+
 	//chris_p - fixed bug where you could not have more than 1 playable area trigger for the whole map
 	valid_drop = false;
 	for (i = 0; i < playable_area.size; i++)
@@ -645,7 +646,7 @@ function powerup_drop(drop_point)
 			break;
 		}
 	}
-	
+
 	// If a valid drop
 	// We will rarely override the drop with a "rare drop"  (MikeA 3/23/10)
 	if( valid_drop && level.rare_powerups_active )
@@ -657,7 +658,7 @@ function powerup_drop(drop_point)
 			valid_drop = 0;
 		}
 	}
-	
+
 	// If not a valid drop, allow another spawn to be attempted
 	if(! valid_drop )
 	{
@@ -707,7 +708,7 @@ function specific_powerup_drop( powerup_name, drop_spot, powerup_team, powerup_l
 		else
 		{
 			powerup thread powerup_grab( powerup_team );
-		}		
+		}
 		powerup thread powerup_move();
 		powerup thread powerup_emp();
 		return powerup;
@@ -759,7 +760,7 @@ function special_powerup_drop(drop_point)
 function powerup_setup( powerup_override,powerup_team, powerup_location, powerup_player, shouldplaysound = true )
 {
 	powerup = undefined;
-	
+
 	if ( !IsDefined( powerup_override ) )
 	{
 		powerup = get_valid_powerup();
@@ -773,7 +774,7 @@ function powerup_setup( powerup_override,powerup_team, powerup_location, powerup
 			// only one tesla at a time, give a minigun instead
 			powerup = "minigun";
 		}
-	}	
+	}
 
 	struct = level.zombie_powerups[powerup];
 
@@ -793,7 +794,7 @@ function powerup_setup( powerup_override,powerup_team, powerup_location, powerup
 	{
 		playsoundatposition("zmb_spawn_powerup", self.origin);
 	}
-	
+
 	if(isDefined(powerup_team))
 	{
 		self.powerup_team = powerup_team;  //for encounters
@@ -804,14 +805,14 @@ function powerup_setup( powerup_override,powerup_team, powerup_location, powerup
 	}
 	if(isDefined(powerup_player))
 	{
-		//assert( IS_TRUE(struct.player_specific), "Non-Player specific powerup dropped with player specified" ); 
-		self.powerup_player = powerup_player; 
-		//self SetInvisibleToAll(); 
-		//self SetVisibleToPlayer( powerup_player ); 
+		//assert( IS_TRUE(struct.player_specific), "Non-Player specific powerup dropped with player specified" );
+		self.powerup_player = powerup_player;
+		//self SetInvisibleToAll();
+		//self SetVisibleToPlayer( powerup_player );
 	}
 	else
 	{
-		assert( !IS_TRUE(struct.player_specific), "Player specific powerup dropped with no player specified" ); 
+		assert( !IS_TRUE(struct.player_specific), "Player specific powerup dropped with no player specified" );
 	}
 	self.powerup_name 			= struct.powerup_name;
 	self.hint 					= struct.hint;
@@ -824,14 +825,14 @@ function powerup_setup( powerup_override,powerup_team, powerup_location, powerup
 	{
 		self.fx = struct.fx;
 	}
-	
+
 	if( IsDefined( struct.can_pick_up_in_last_stand ) )
 	{
 		self.can_pick_up_in_last_stand = struct.can_pick_up_in_last_stand;
 	}
 
 	self PlayLoopSound("zmb_spawn_powerup_loop");
-	
+
     level.active_powerups[level.active_powerups.size]=self;
 }
 
@@ -841,14 +842,14 @@ function powerup_setup( powerup_override,powerup_team, powerup_location, powerup
 function special_drop_setup()
 {
 	powerup = undefined;
-	
+
 	if( isdefined( level.powerup_special_drop_override ) )
 	{
 		powerup = [[ level.powerup_special_drop_override ]]();
 	}
 	else
 	{
-		powerup = get_valid_powerup();	
+		powerup = get_valid_powerup();
 	}
 
 	if ( isdefined( powerup ) )
@@ -886,12 +887,12 @@ function powerup_zombie_grab(powerup_team)
 	self endon( "powerup_timedout" );
 	self endon( "powerup_grabbed" );
 	self endon( "hacked" );
-	
+
 	zombie_grab_trigger = spawn( "trigger_radius", self.origin - (0,0,40), SPAWNFLAG_TRIGGER_AI_AXIS + SPAWNFLAG_TRIGGER_NOT_PLAYER, 32, 72 );
 	zombie_grab_trigger enablelinkto();
 	zombie_grab_trigger linkto( self );
 	zombie_grab_trigger SetTeamForTrigger( level.zombie_team );
-	
+
 	self thread powerup_zombie_grab_trigger_cleanup( zombie_grab_trigger );
 	poi_dist = 300;
 	if(isDefined(level._zombie_grabbable_poi_distance_override))
@@ -922,14 +923,14 @@ function powerup_zombie_grab(powerup_team)
 			continue;
 		}
 
-		playfx( level._effect["powerup_grabbed_red"], self.origin );	
+		playfx( level._effect["powerup_grabbed_red"], self.origin );
 
 		if( isdefined( level._custom_powerups ) && isdefined( level._custom_powerups[ self.powerup_name ] ) && isdefined( level._custom_powerups[ self.powerup_name ].grab_powerup ) )
 		{
 			b_continue = self [[ level._custom_powerups[ self.powerup_name ].grab_powerup ]]();
 			if( IS_TRUE( b_continue ) )
 			{
-				continue;	
+				continue;
 			}
 		}
 		else
@@ -938,20 +939,20 @@ function powerup_zombie_grab(powerup_team)
 			{
 				level thread [[ level._zombiemode_powerup_zombie_grab ]]( self );
 			}
-			
+
 			if ( IsDefined( level._game_mode_powerup_zombie_grab ) )
 			{
 				level thread [[ level._game_mode_powerup_zombie_grab ]]( self,who );
 			}
-			
-			
+
+
 			// RAVEN END
 			else
 			{
-		
-			}			
+
+			}
 		}
-		
+
 		level thread zm_audio::sndAnnouncerPlayVox(self.powerup_name);
 
 		wait( 0.1 );
@@ -980,7 +981,7 @@ function powerup_grab(powerup_team)
 	{
 		if( IsDefined( self.powerup_player ) )
 		{
-			grabbers = []; 
+			grabbers = [];
 			grabbers[0] = self.powerup_player;
 		}
 		else if( IsDefined(level.powerup_grab_get_players_override) )
@@ -1004,7 +1005,7 @@ function powerup_grab(powerup_team)
 				player = grabber;
 			}
 
-			// if it's a personal power up, require a player 
+			// if it's a personal power up, require a player
 			if ( self.only_affects_grabber && !isdefined( player ) )
 			{
 				continue;
@@ -1014,7 +1015,7 @@ function powerup_grab(powerup_team)
 			{
 				continue;
 			}
-			
+
 			// Don't let them grab the minigun, tesla, or random weapon if they're downed or reviving
 			//	due to weapon switching issues.
 			if ( (self.powerup_name == "minigun" || self.powerup_name == "tesla" || self.powerup_name == "random_weapon" ) &&
@@ -1025,7 +1026,7 @@ function powerup_grab(powerup_team)
 			{
 				continue;
 			}
-			
+
 			// Don't let them grab this power up if they are in last stand and this power is not for last stand players
 			if ( !IS_TRUE( self.can_pick_up_in_last_stand ) && player laststand::player_is_in_laststand() )
 			{
@@ -1038,7 +1039,7 @@ function powerup_grab(powerup_team)
 				grabber.ignore_range_powerup = undefined;
 				ignore_range = true;
 			}
-			
+
 			if ( DistanceSquared( grabber.origin, self.origin ) < range_squared || ignore_range )
 			{
 				if ( isdefined( level._powerup_grab_check ) )
@@ -1055,24 +1056,24 @@ function powerup_grab(powerup_team)
 					}
 				}
 				*/
-				
+
 				if( isdefined( level._custom_powerups ) && isdefined( level._custom_powerups[ self.powerup_name ] ) && isdefined( level._custom_powerups[ self.powerup_name ].grab_powerup ) )
 				{
 					b_continue = self [[ level._custom_powerups[ self.powerup_name ].grab_powerup ]]( player );
 					if( IS_TRUE( b_continue ) )
 					{
-						continue;	
+						continue;
 					}
 				}
 				else
 				{
 					switch (self.powerup_name)
-					{						
+					{
 					case "teller_withdrawl":
 						level thread teller_withdrawl(self,player);
-						//TODO - play some sound/vo stuff here? 
+						//TODO - play some sound/vo stuff here?
 						break;
-						
+
 					default:
 						// RAVEN BEGIN bhackbarth: callback for level specific powerups
 						if ( IsDefined( level._zombiemode_powerup_grab ) )
@@ -1082,14 +1083,14 @@ function powerup_grab(powerup_team)
 						// RAVEN END
 						else
 						{
-					
+
 						}
 
 						break;
 
 					}
 				}
-				
+
 				demo::bookmark( "zm_player_powerup_grabbed", gettime(), player );
 				if (isDefined(self.hash_id))
 				{
@@ -1105,7 +1106,7 @@ function powerup_grab(powerup_team)
 					player zm_stats::increment_player_stat( self.powerup_name + "_pickedup" );
 					player zm_stats::increment_challenge_stat( "SURVIVALIST_POWERUP" );
 				}
-				
+
 				if ( self.only_affects_grabber )
 				{
 					playfx( level._effect["powerup_grabbed_solo"], self.origin );
@@ -1123,23 +1124,23 @@ function powerup_grab(powerup_team)
 				{
 					level notify( "monkey_see_monkey_dont_achieved" );
 				}
-				
+
 				if( IsDefined( self.grabbed_level_notify ) )
 				{
 					level notify( self.grabbed_level_notify );
 				}
 
-				// RAVEN BEGIN bhackbarth: since there is a wait here, flag the powerup as being taken 
+				// RAVEN BEGIN bhackbarth: since there is a wait here, flag the powerup as being taken
 				self.claimed = true;
 				self.power_up_grab_player = player; //Player who grabbed the power up
 				// RAVEN END
 
 				wait( 0.1 );
-				
+
 				playsoundatposition("zmb_powerup_grabbed", self.origin);
 				self stoploopsound();
 				self hide();
-				
+
 				//Preventing the line from playing AGAIN if fire sale becomes active before it runs out
 				if( self.powerup_name != "fire_sale" )
 				{
@@ -1170,7 +1171,7 @@ function powerup_grab(powerup_team)
 					level thread zm_audio::sndAnnouncerPlayVox(self.powerup_name, player);
 				else
 					level thread zm_audio::sndAnnouncerPlayVox(self.powerup_name );
-				
+
 				self thread powerup_delete_delayed();
 				self notify ("powerup_grabbed");
 			}
@@ -1188,11 +1189,11 @@ function get_closest_window_repair( windows, origin )
 		if( zm_utility::all_chunks_intact(windows, windows[i].barrier_chunks ) )
 			continue;
 
-		if( !IsDefined( current_window ) )	
+		if( !IsDefined( current_window ) )
 		{
 			current_window = windows[i];
 			shortest_distance = DistanceSquared( current_window.origin, origin );
-			
+
 		}
 		else
 		{
@@ -1217,10 +1218,10 @@ function powerup_vo( type )
 {
 	self endon("death");
 	self endon("disconnect");
-	
+
 	if( !isPlayer( self ) )
 		return;
-	
+
 	if(isDefined(level.powerup_vo_available) )
 	{
 		if(![[level.powerup_vo_available]]() )
@@ -1228,7 +1229,7 @@ function powerup_vo( type )
 			return;
 		}
 	}
-	
+
 	wait( randomfloatrange(2,2.5) );
 
 	if( type == "tesla" )
@@ -1248,8 +1249,8 @@ function powerup_vo( type )
 
 function powerup_wobble_fx()
 {
-	self endon( "death" ); 
-	
+	self endon( "death" );
+
 	if ( !isdefined( self ) )
 	{
 		return;
@@ -1262,7 +1263,7 @@ function powerup_wobble_fx()
 	}
 
 	//wait( 0.5 ); // must wait a bit because of the bug where a new entity has its events ignored on the client side //bumping it up from .1 to .5, this was failing in some instances
-	
+
 	if ( self.only_affects_grabber )
 	{
 		self clientfield::set( CLIENTFIELD_POWERUP_FX_NAME, CLIENTFIELD_POWERUP_FX_ONLY_AFFECTS_GRABBER_ON );
@@ -1270,7 +1271,7 @@ function powerup_wobble_fx()
 	else if ( self.any_team )
 	{
 		self clientfield::set( CLIENTFIELD_POWERUP_FX_NAME, CLIENTFIELD_POWERUP_FX_ANY_TEAM_ON );
-	}	
+	}
 	else if ( self.zombie_grabbable )
 	{
 		self clientfield::set( CLIENTFIELD_POWERUP_FX_NAME, CLIENTFIELD_POWERUP_FX_ZOMBIE_GRABBABLE_ON );
@@ -1313,7 +1314,7 @@ function powerup_wobble()
 
 function powerup_show( visible )
 {
-	if ( !visible ) 
+	if ( !visible )
 	{
 		self ghost();
 		if ( isdefined( self.worldgundw ) )
@@ -1330,12 +1331,12 @@ function powerup_show( visible )
 		}
 		if(isDefined(self.powerup_player))
 		{
-			self SetInvisibleToAll(); 
-			self SetVisibleToPlayer( self.powerup_player ); 
+			self SetInvisibleToAll();
+			self SetVisibleToPlayer( self.powerup_player );
 			if ( isdefined( self.worldgundw ) )
 			{
-				self.worldgundw SetInvisibleToAll(); 
-				self.worldgundw SetVisibleToPlayer( self.powerup_player ); 
+				self.worldgundw SetInvisibleToAll();
+				self.worldgundw SetVisibleToPlayer( self.powerup_player );
 			}
 		}
 	}
@@ -1351,9 +1352,9 @@ function powerup_timeout()
 	self endon( "powerup_grabbed" );
 	self endon( "death" );
 	self endon("powerup_reset");
-	
+
 	self powerup_show( true );
-	
+
 	wait_time = 15;
 	if (isDefined( level._powerup_timeout_custom_time ) )
 	{
@@ -1363,14 +1364,14 @@ function powerup_timeout()
 			return;
 		}
 		wait_time = time;
-		
+
 	}
-	
+
 	if( bgb::is_team_enabled( "zm_bgb_temporal_gift" ) )
 	{
 		wait_time += N_POWERUP_DEFAULT_TIME;//Get extra 30 seconds
 	}
-	
+
 	wait wait_time;
 
 	for ( i = 0; i < 40; i++ )
@@ -1398,7 +1399,7 @@ function powerup_timeout()
 			wait( 0.1 );
 		}
 	}
-	
+
 	self notify( "powerup_timedout" );
 	self powerup_delete();
 }
@@ -1437,13 +1438,13 @@ function is_insta_kill_active()
 
 function check_for_instakill( player, mod, hit_location )
 {
-	if(isDefined(player) && isAlive(player) && isDefined(level.check_for_instakill_override)) 
+	if(isDefined(player) && isAlive(player) && isDefined(level.check_for_instakill_override))
 	{
 		if ( !self [[level.check_for_instakill_override]](player) )
 		{
 			return;
 		}
-		
+
 		if(player.use_weapon_type == "MOD_MELEE")
 		{
 			player.last_kill_method = "MOD_MELEE";
@@ -1461,9 +1462,9 @@ function check_for_instakill( player, mod, hit_location )
 		self.health = 1;
 		self DoDamage( self.health + 666, self.origin, player, self, hit_location, modName );
 		player notify("zombie_killed");
-		
+
 	}
-	
+
 	if( IsDefined( player ) && IsAlive( player ) && ( level.zombie_vars[player.team]["zombie_insta_kill"] || IS_TRUE( player.personal_instakill )) )
 	{
 		if( zm_utility::is_magic_bullet_shield_enabled( self ) )
@@ -1534,10 +1535,10 @@ function point_doubler_on_hud( drop_item, player_team )
 function time_remaining_on_point_doubler_powerup( player_team )
 {
 	//self setvalue( level.zombie_vars["zombie_powerup_double_points_time"] );
-	
+
 	temp_ent = spawn("script_origin", (0,0,0));
 	temp_ent playloopsound ("zmb_double_point_loop");
-	
+
 	// time it down!
 	while ( level.zombie_vars[player_team]["zombie_powerup_double_points_time"] >= 0)
 	{
@@ -1593,7 +1594,7 @@ function tesla_powerup_active()
 			return true;
 		}
 	}
-	
+
 	return false;
 }
 
@@ -1612,9 +1613,9 @@ function register_carpenter_node(node, callback)
 	{
 		level._additional_carpenter_nodes = [];
 	}
-	
+
 	node._post_carpenter_callback = callback;
-	
+
 	level._additional_carpenter_nodes[level._additional_carpenter_nodes.size] = node;
 }
 
@@ -1650,7 +1651,7 @@ function powerup_move()
 {
 	self endon ("powerup_timedout");
 	self endon ("powerup_grabbed");
-	
+
 	drag_speed = 75;
 	while ( 1 )
 	{
@@ -1663,7 +1664,7 @@ function powerup_move()
 			drag_vector = distance * drag_vector;
 			moveto = self.origin + drag_vector;
 		}
-		self.origin = moveto;		
+		self.origin = moveto;
 	}
 }
 
@@ -1708,12 +1709,12 @@ function should_award_stat( powerup_name )
 	{
 		return false;
 	}
-	
+
 	if ( isdefined( level.zombie_statless_powerups ) && isdefined( level.zombie_statless_powerups[powerup_name] ) && level.zombie_statless_powerups[powerup_name] )
 	{
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -1726,7 +1727,7 @@ function teller_withdrawl(powerup,player)
 function show_on_hud( player_team, str_powerup )
 {
 	self endon ("disconnect");
-	
+
 	str_index_on 	= "zombie_powerup_" + str_powerup + "_on";
 	str_index_time 	= "zombie_powerup_" + str_powerup + "_time";
 
@@ -1738,7 +1739,7 @@ function show_on_hud( player_team, str_powerup )
 		if( bgb::is_team_enabled( "zm_bgb_temporal_gift" ) )
 		{
 			level.zombie_vars[player_team][str_index_time] += N_POWERUP_DEFAULT_TIME;//Get extra 30 seconds
-		}		
+		}
 		return;
 	}
 
@@ -1749,20 +1750,20 @@ function show_on_hud( player_team, str_powerup )
 }
 
 function time_remaining_on_powerup( player_team, str_powerup )
-{	
+{
 	str_index_on 	= "zombie_powerup_" + str_powerup + "_on";
 	str_index_time 	= "zombie_powerup_" + str_powerup + "_time";
 	str_sound_loop 	= "zmb_" + str_powerup + "_loop";
 	str_sound_off 	= "zmb_" + str_powerup + "_loop_off";
-	
+
 	temp_ent = Spawn("script_origin", (0,0,0));
 	temp_ent PlayLoopSound (str_sound_loop);
-	
+
 	if( bgb::is_team_enabled( "zm_bgb_temporal_gift" ) )
 	{
 		level.zombie_vars[player_team][str_index_time] += N_POWERUP_DEFAULT_TIME;
 	}
-	
+
 	// time it down!
 	while ( level.zombie_vars[player_team][str_index_time] >= 0)
 	{
@@ -1772,7 +1773,7 @@ function time_remaining_on_powerup( player_team, str_powerup )
 
 	// turn off the timer
 	level.zombie_vars[player_team][str_index_on] = false;
-	
+
 	GetPlayers()[0] PlaySoundToTeam(str_sound_off, player_team);
 
 	temp_ent StopLoopSound(2);
@@ -1790,28 +1791,28 @@ function weapon_powerup( ent_player, time, str_weapon, allow_cycling = false )
 {
 	str_weapon_on 			= "zombie_powerup_" + str_weapon + "_on";
 	str_weapon_time_over 	= str_weapon + "_time_over";
-	
+
 	ent_player notify( "replace_weapon_powerup" );
 	ent_player._show_solo_hud = true;
-	
+
 	ent_player.has_specific_powerup_weapon[ str_weapon ] = true;
 	ent_player.has_powerup_weapon = true;
-	
+
 	ent_player zm_utility::increment_is_drinking();
-	
+
 	if( allow_cycling )
 	{
 		ent_player EnableWeaponCycling();
 	}
-	
+
 	ent_player._zombie_weapon_before_powerup[ str_weapon ] = ent_player GetCurrentWeapon();
-	
+
 	// give player the powerup weapon
 	ent_player GiveWeapon( level.zombie_powerup_weapon[ str_weapon ] );
 	ent_player SwitchToWeapon( level.zombie_powerup_weapon[ str_weapon ] );
-	
+
 	ent_player.zombie_vars[ str_weapon_on ] = true;
-	
+
 	level thread weapon_powerup_countdown( ent_player, str_weapon_time_over, time, str_weapon );
 	level thread weapon_powerup_replace( ent_player, str_weapon_time_over, str_weapon );
 	level thread weapon_powerup_change( ent_player, str_weapon_time_over, str_weapon );
@@ -1824,17 +1825,17 @@ function weapon_powerup_change( ent_player, str_gun_return_notify, str_weapon )
 	ent_player endon( "player_downed" );
 	ent_player endon( str_gun_return_notify );
 	ent_player endon( "replace_weapon_powerup" );
-	
+
 	while( 1 )
 	{
 		ent_player waittill( "weapon_change", newWeapon, oldWeapon );
-	
+
 		if( newWeapon != level.weaponNone && newWeapon != level.zombie_powerup_weapon[ str_weapon ] )
 		{
 			break;
 		}
 	}
-	
+
 	level thread weapon_powerup_remove( ent_player, str_gun_return_notify, str_weapon, false );
 }
 
@@ -1845,19 +1846,19 @@ function weapon_powerup_countdown( ent_player, str_gun_return_notify, time, str_
 	ent_player endon( "player_downed" );
 	ent_player endon( str_gun_return_notify );
 	ent_player endon( "replace_weapon_powerup" );
-	
+
 	str_weapon_time = "zombie_powerup_" + str_weapon + "_time";
-	
+
 	ent_player.zombie_vars[str_weapon_time] = time;
-	
+
 	if( bgb::is_team_enabled( "zm_bgb_temporal_gift" ) )
 	{
 		ent_player.zombie_vars[str_weapon_time] += N_POWERUP_DEFAULT_TIME;
-	}	
-	
+	}
+
 	[[level._custom_powerups[ str_weapon ].weapon_countdown]]( ent_player, str_weapon_time );
-	
-	level thread weapon_powerup_remove( ent_player, str_gun_return_notify, str_weapon, true );	
+
+	level thread weapon_powerup_remove( ent_player, str_gun_return_notify, str_weapon, true );
 }
 
 function weapon_powerup_replace( ent_player, str_gun_return_notify, str_weapon )
@@ -1866,18 +1867,18 @@ function weapon_powerup_replace( ent_player, str_gun_return_notify, str_weapon )
 	ent_player endon( "disconnect" );
 	ent_player endon( "player_downed" );
 	ent_player endon( str_gun_return_notify );
-	
+
 	str_weapon_on 	= "zombie_powerup_" + str_weapon + "_on";
 
 	ent_player waittill( "replace_weapon_powerup" );
 
 	ent_player TakeWeapon( level.zombie_powerup_weapon[ str_weapon ] );
-	
+
 	ent_player.zombie_vars[ str_weapon_on ] = false;
-	
+
 	ent_player.has_specific_powerup_weapon[ str_weapon ] = false;
 	ent_player.has_powerup_weapon = false;
-	
+
 	ent_player zm_utility::decrement_is_drinking();
 }
 
@@ -1885,21 +1886,21 @@ function weapon_powerup_remove( ent_player, str_gun_return_notify, str_weapon, b
 {
 	ent_player endon( "death" );
 	ent_player endon( "player_downed" );
-	
+
 	str_weapon_on 	= "zombie_powerup_" + str_weapon + "_on";
-	
+
 	// take the minigun back
 	ent_player TakeWeapon( level.zombie_powerup_weapon[ str_weapon ] );
-	
+
 	ent_player.zombie_vars[ str_weapon_on ] = false;
 	ent_player._show_solo_hud = false;
-	
+
 	ent_player.has_specific_powerup_weapon[ str_weapon ] = false;
 	ent_player.has_powerup_weapon = false;
-	
+
 	// this gives the player back their weapons
 	ent_player notify( str_gun_return_notify );
-	
+
 	ent_player zm_utility::decrement_is_drinking();
 
 	if ( b_switch_back_weapon )
@@ -1912,14 +1913,14 @@ function weapon_watch_gunner_downed( str_weapon )
 {
 	str_notify 		= str_weapon + "_time_over";
 	str_weapon_on 	= "zombie_powerup_" + str_weapon + "_on";
-	
+
 	if ( !IsDefined( self.has_specific_powerup_weapon ) || !IS_TRUE( self.has_specific_powerup_weapon[ str_weapon ] ) )
 	{
 		return;
 	}
 
 	primaryWeapons = self GetWeaponsListPrimaries();
-	
+
 	for( i = 0; i < primaryWeapons.size; i++ )
 	{
 		if( primaryWeapons[i] == level.zombie_powerup_weapon[ str_weapon ] )
@@ -1948,7 +1949,7 @@ function weapon_watch_gunner_downed( str_weapon )
 "Summary: Registers functions to run when zombie perks are given to and taken from players."
 "MandatoryArg: <str_powerup>: the name of the specialty that this perk uses. This should be unique, and will identify this perk in system scripts."
 "OptionalArg: [func_grab_powerup]: this function will run when the player grabs the powerup."
-"OptionalArg: [func_setup]: this function will in addition to normal powerup setup."	
+"OptionalArg: [func_setup]: this function will in addition to normal powerup setup."
 "Example: register_powerup( "nuke", &grab_nuke );"
 "SPMP: multiplayer"
 @/
@@ -1957,7 +1958,7 @@ function register_powerup( str_powerup, func_grab_powerup, func_setup )
 	Assert( IsDefined( str_powerup ), "str_powerup is a required argument for register_powerup!" );
 
 	_register_undefined_powerup( str_powerup );
-	
+
 	if ( IsDefined( func_grab_powerup ) )
 	{
 		if ( !IsDefined( level._custom_powerups[ str_powerup ].grab_powerup ) )
@@ -1965,14 +1966,14 @@ function register_powerup( str_powerup, func_grab_powerup, func_setup )
 			level._custom_powerups[ str_powerup ].grab_powerup = func_grab_powerup;
 		}
 	}
-	
+
 	if ( IsDefined( func_setup ) )
 	{
 		if ( !IsDefined( level._custom_powerups[ str_powerup ].setup_powerup ) )
 		{
 			level._custom_powerups[ str_powerup ].setup_powerup = func_setup;
 		}
-	}	
+	}
 }
 
 // make sure powerup exists before we actually try to set fields on it. Does nothing if it exists already
@@ -1982,12 +1983,12 @@ function _register_undefined_powerup( str_powerup )
 	{
 		level._custom_powerups = [];
 	}
-	
+
 	if ( !IsDefined( level._custom_powerups[ str_powerup ] ) )
 	{
 		level._custom_powerups[ str_powerup ] = SpawnStruct();
 		include_zombie_powerup( str_powerup );
-	}	
+	}
 }
 
 /@
@@ -2004,7 +2005,7 @@ function register_powerup_weapon( str_powerup, func_countdown )
 	Assert( IsDefined( str_powerup ), "str_powerup is a required argument for register_powerup!" );
 
 	_register_undefined_powerup( str_powerup );
-	
+
 	if ( IsDefined( func_countdown ) )
 	{
 		if ( !IsDefined( level._custom_powerups[ str_powerup ].weapon_countdown ) )

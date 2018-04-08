@@ -4783,8 +4783,9 @@ function zombify_player() // self = player
 	self.is_zombie = true;
 	self.zombification_time = GetTime();
 
-	//self.team = level.zombie_team;
-	self SetTeam( level.zombie_team ); // DUKIP - update the team
+	self.team = level.zombie_team;
+	self.pers[ "team" ] = level.zombie_team;
+	self.sessionteam = level.zombie_team;
 
 	self notify( "zombified" );
 
@@ -4794,8 +4795,8 @@ function zombify_player() // self = player
 	}
 	self.revivetrigger = undefined;
 
-	self setMoveSpeedScale( 0.3 );
-	self reviveplayer();
+	self SetMoveSpeedScale( 0.95 );
+	self RevivePlayer();
 
 	self TakeAllWeapons();
 	self DisableWeaponCycling();
