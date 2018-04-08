@@ -8,6 +8,8 @@
 #using scripts\zm\gametypes\_zm_gametype;
 
 #using scripts\zm\_zm;
+#using scripts\zm\_zm_laststand;
+#using scripts\zm\_zm_perks;
 #using scripts\zm\_zm_stats;
 #using scripts\zm\_zm_utility;
 
@@ -38,9 +40,8 @@ function main()
 	callback::on_spawned( &on_player_spawned );
 	// friendly-fire damage
 	zm::register_player_friendly_fire_callback( &on_friendly_fire_damage );
-	// TODO - revive mod
-	//zm_perks::register_revive_success_perk_func( &on_revive_func );
-
+	// revive override
+	zm_perks::register_revive_success_perk_func( &on_revive_success );
 	// clientfield registration
 	for ( i = 4; i < 8; i++ )
 	{
@@ -88,6 +89,8 @@ function grief_game_end_check_func()
 function on_player_connect()
 {
 	self.grief_team = ( Int( self GetEntityNumber() % 2 ) == 0 ? "A" : "B" );
+	// func_is_reviving | func_can_revive | b_use_revive_tool
+	self zm_laststand::register_revive_override( &on_revive_func, undefined, undefined );
 }
 
 function on_player_disconnect()
@@ -98,10 +101,28 @@ function on_player_laststand()
 {
 	IPrintLnBold( self.name + " went down." );
 }
-// TODO: want to override reviving on opp team to kill the player
-function on_revive_func()
-{
 
+function on_revive_func( e_revivee )
+{
+	// modify the hintstring
+	if ( self.grief_team != e_revivee.grief_team && self IsTouching( e_revivee.revivetrigger ) )
+	{
+		e_revivee.grief_death_marked = true;
+		e_revivee.revivetrigger SetHintString("HEHE BOIII");
+	}
+	else
+		self.grief_death_marked = false;
+
+	// use the same code from zm_laststand
+	return( self UseButtonPressed() && self zm_laststand::can_revive( e_revivee, true, true ) );
+}
+
+function on_revive_success()
+{
+	if ( !IS_TRUE( self.grief_death_marked ) )
+		return;
+
+	self zm_laststand::bleed_out();
 }
 
 function on_player_spawned()
