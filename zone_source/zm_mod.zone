@@ -24,3 +24,6 @@ scriptparsetree,scripts/zm/_zm_powerups.gsc
 
 //	[DEBUG]
 scriptparsetree,scripts/zm/gametypes/_globallogic.gsc
+
+//	-SOUND-
+sound,zm_mod

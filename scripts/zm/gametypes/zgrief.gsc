@@ -4,6 +4,7 @@
 #using scripts\shared\clientfield_shared;
 #using scripts\shared\flag_shared;
 #using scripts\shared\math_shared;
+#using scripts\shared\sound_shared;
 
 #using scripts\zm\gametypes\_zm_gametype;
 
@@ -19,7 +20,6 @@
 #insert scripts\shared\shared.gsh;
 #insert scripts\shared\version.gsh;
 
-#define VALID_GRIEF_TEAM(__team) (isdefined(level.grief_team[__team])&&level.grief_team[__team].size>0)
 function main()
 {
 	zm_gametype::main();	// Generic zombie mode setup - must be called first.
@@ -32,10 +32,6 @@ function main()
 
 	// on connect
 	callback::on_connect( &on_player_connect );
-	// on disconnect
-	callback::on_disconnect( &on_player_disconnect );
-	// on laststand
-	callback::on_laststand( &on_player_laststand );
 	// on spawned
 	callback::on_spawned( &on_player_spawned );
 	// friendly-fire damage
@@ -89,17 +85,8 @@ function grief_game_end_check_func()
 function on_player_connect()
 {
 	self.grief_team = ( Int( self GetEntityNumber() % 2 ) == 0 ? "A" : "B" );
-	// func_is_reviving | func_can_revive | b_use_revive_tool
+	// register a revive override
 	self zm_laststand::register_revive_override( &on_revive_func, undefined, undefined );
-}
-
-function on_player_disconnect()
-{
-}
-
-function on_player_laststand()
-{
-	IPrintLnBold( self.name + " went down." );
 }
 
 function on_revive_func( e_revivee )
@@ -143,6 +130,8 @@ function grief()
 	level flag::wait_till( "initial_blackscreen_passed" );
 
 	DEFAULT( level.grief_team_dead, false );
+
+	sound::play_on_players( "vox_zmba_grief_intro" );
 
 	level thread grief_round_logic();
 }

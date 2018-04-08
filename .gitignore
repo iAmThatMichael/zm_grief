@@ -2,3 +2,5 @@ zone_source/*/*
 zone/*
 *.log
 scripts/m_shared
+sound/zone
+english/sound
