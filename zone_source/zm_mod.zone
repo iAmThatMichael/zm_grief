@@ -21,3 +21,6 @@ scriptparsetree,scripts/zm/_zm.gsc
 scriptparsetree,scripts/zm/_zm_laststand.csc
 scriptparsetree,scripts/zm/_zm_laststand.gsc
 scriptparsetree,scripts/zm/_zm_powerups.gsc
+
+//	[DEBUG]
+scriptparsetree,scripts/zm/gametypes/_globallogic.gsc

@@ -7,6 +7,7 @@
 
 #using scripts\zm\gametypes\_zm_gametype;
 
+#using scripts\zm\_zm;
 #using scripts\zm\_zm_stats;
 #using scripts\zm\_zm_utility;
 
@@ -22,11 +23,23 @@ function main()
 	zm_gametype::main();	// Generic zombie mode setup - must be called first.
 
 	// Mode specific over-rides.
-
-	level.onPrecacheGameType =&onPrecacheGameType;
-	level.onStartGameType =&onStartGameType;
+	level.onPrecacheGameType = &onPrecacheGameType;
+	level.onStartGameType = &onStartGameType;
 	level._game_module_custom_spawn_init_func = &zm_gametype::custom_spawn_init_func;
 	level._game_module_stat_update_func = &zm_stats::survival_classic_custom_stat_update;
+
+	// on connect
+	callback::on_connect( &on_player_connect );
+	// on disconnect
+	callback::on_disconnect( &on_player_disconnect );
+	// on laststand
+	callback::on_laststand( &on_player_laststand );
+	// on spawned
+	callback::on_spawned( &on_player_spawned );
+	// friendly-fire damage
+	zm::register_player_friendly_fire_callback( &on_friendly_fire_damage );
+	// TODO - revive mod
+	//zm_perks::register_revive_success_perk_func( &on_revive_func );
 
 	// clientfield registration
 	for ( i = 4; i < 8; i++ )
@@ -39,13 +52,6 @@ function main()
 		clientfield::register( "clientuimodel", "PlayerList.client" + i + ".score_cf_death_head", VERSION_SHIP, GetMinBitCountForNum( 3 ), "counter" );
 		clientfield::register( "clientuimodel", "PlayerList.client" + i + ".score_cf_death_melee", VERSION_SHIP, GetMinBitCountForNum( 3 ), "counter" );
 	}
-
-	callback::on_connect( &on_player_connect );
-	callback::on_disconnect( &on_player_disconnect );
-	callback::on_laststand( &on_player_laststand );
-	callback::on_spawned( &on_player_spawned );
-
-	//zm_perks::register_revive_success_perk_func( &on_revive_func );
 }
 
 function onPrecacheGameType()
@@ -165,7 +171,7 @@ function grief_check_teams()
 					team_b_alive++;
 			}
 		}
-		// neither teams are downed
+		// neither team is down
 		if ( team_a_alive > 0 && team_b_alive > 0 )
 		{
 			level.grief_team_dead = false;
@@ -204,5 +210,25 @@ function grief_end_round_logic()
 	else
 	{
 		level.grief_team_dead = false;
+	}
+}
+
+function on_friendly_fire_damage( eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, weapon, vPoint, vDir, sHitLoc, psOffsetTime, boneIndex )
+{
+	if ( !isdefined( eAttacker ) )
+		return;
+	// don't allow damage from self OR same grief team
+	if ( self == eAttacker )
+		return;
+	if ( self.grief_team == eAttacker.grief_team )
+		return;
+	if ( IsPlayer( eAttacker ) )
+	{
+		switch ( sMeansOfDeath )
+		{
+			case "MOD_MELEE":
+				self ApplyKnockBack( iDamage, vDir );
+				break;
+		}
 	}
 }
