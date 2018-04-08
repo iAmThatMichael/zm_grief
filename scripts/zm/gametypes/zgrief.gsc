@@ -109,9 +109,10 @@ function on_revive_func( e_revivee )
 	{
 		e_revivee.grief_death_marked = true;
 		e_revivee.revivetrigger SetHintString("HEHE BOIII");
+		e_revivee.revive_hud SetText( self.name + " is killing you...." );
 	}
 	else
-		self.grief_death_marked = false;
+		e_revivee.grief_death_marked = false;
 
 	// use the same code from zm_laststand
 	return( self UseButtonPressed() && self zm_laststand::can_revive( e_revivee, true, true ) );
