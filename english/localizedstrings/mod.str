@@ -1,0 +1,10 @@
+VERSION			"1"
+CONFIG			"C:\projects\cod\t5\bin\StringEd.cfg"
+
+REFERENCE		HOLD_TO_KILL
+LANG_ENGLISH	"Hold ^3[{+activate}]^7 to kill ^1&&1^7"
+
+REFERENCE		IS_KILLING_YOU
+LANG_ENGLISH	"^1&&1^7 IS KILLING YOU"
+
+ENDMARKER

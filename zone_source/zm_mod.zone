@@ -27,3 +27,6 @@ scriptparsetree,scripts/zm/gametypes/_globallogic.gsc
 
 //	-SOUND-
 sound,zm_mod
+
+// -LANGUAGE-
+localize,mod

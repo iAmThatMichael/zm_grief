@@ -20,6 +20,9 @@
 #insert scripts\shared\shared.gsh;
 #insert scripts\shared\version.gsh;
 
+#precache( "string", "MOD_HOLD_TO_KILL" );
+#precache( "string", "MOD_IS_KILLING_YOU" );
+
 function main()
 {
 	zm_gametype::main();	// Generic zombie mode setup - must be called first.
@@ -95,14 +98,14 @@ function on_revive_func( e_revivee )
 	if ( self.grief_team != e_revivee.grief_team && self IsTouching( e_revivee.revivetrigger ) )
 	{
 		e_revivee.grief_death_marked = true;
-		e_revivee.revivetrigger SetHintString("HEHE BOIII");
-		e_revivee.revive_hud SetText( self.name + " is killing you...." );
+		e_revivee.revivetrigger SetHintString( &"MOD_HOLD_TO_KILL", e_revivee.name );
+		e_revivee.revive_hud SetText( &"MOD_IS_KILLING_YOU", e_revivee.name );
 	}
 	else
 		e_revivee.grief_death_marked = false;
 
 	// use the same code from zm_laststand
-	return( self UseButtonPressed() && self zm_laststand::can_revive( e_revivee, true, true ) );
+	return( self UseButtonPressed() && self zm_laststand::can_revive( e_revivee, true, true ) && self IsTouching( e_revivee.revivetrigger ) );
 }
 
 function on_revive_success()
