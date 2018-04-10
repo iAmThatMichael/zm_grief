@@ -4,3 +4,4 @@ zone/*
 scripts/m_shared
 sound/zone
 english/sound
+*.txt

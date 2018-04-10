@@ -98,8 +98,13 @@ function on_revive_func( e_revivee )
 	if ( self.grief_team != e_revivee.grief_team && self IsTouching( e_revivee.revivetrigger ) )
 	{
 		e_revivee.grief_death_marked = true;
-		e_revivee.revivetrigger SetHintString( &"MOD_HOLD_TO_KILL", e_revivee.name );
-		e_revivee.revive_hud SetText( &"MOD_IS_KILLING_YOU", e_revivee.name );
+		if ( IS_TRUE( e_revivee.revivetrigger.beingRevived ) )
+		{
+			e_revivee.revivetrigger SetHintString( "" );
+			e_revivee.revive_hud SetText( &"MOD_IS_KILLING_YOU", e_revivee.name );
+		}
+		else
+			e_revivee.revivetrigger SetHintString( &"MOD_HOLD_TO_KILL", e_revivee.name );
 	}
 	else
 		e_revivee.grief_death_marked = false;
