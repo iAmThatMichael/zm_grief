@@ -11,6 +11,7 @@
 #using scripts\zm\_zm;
 #using scripts\zm\_zm_laststand;
 #using scripts\zm\_zm_perks;
+#using scripts\zm\_zm_score;
 #using scripts\zm\_zm_stats;
 #using scripts\zm\_zm_utility;
 
@@ -97,7 +98,7 @@ function on_revive_func( e_revivee )
 	// modify the hintstring
 	if ( self.grief_team != e_revivee.grief_team && self IsTouching( e_revivee.revivetrigger ) )
 	{
-		e_revivee.grief_death_marked = true;
+		e_revivee.grief_death_marked = self;
 		if ( IS_TRUE( e_revivee.revivetrigger.beingRevived ) )
 		{
 			e_revivee.revivetrigger SetHintString( "" );
@@ -107,7 +108,7 @@ function on_revive_func( e_revivee )
 			e_revivee.revivetrigger SetHintString( &"MOD_HOLD_TO_KILL", e_revivee.name );
 	}
 	else
-		e_revivee.grief_death_marked = false;
+		e_revivee.grief_death_marked = undefined;
 
 	// use the same code from zm_laststand
 	return( self UseButtonPressed() && self zm_laststand::can_revive( e_revivee, true, true ) && self IsTouching( e_revivee.revivetrigger ) );
@@ -115,9 +116,10 @@ function on_revive_func( e_revivee )
 
 function on_revive_success()
 {
-	if ( !IS_TRUE( self.grief_death_marked ) )
+	if ( !isdefined( self.grief_death_marked ) && !IsPlayer( self.grief_death_marked ) )
 		return;
 
+	self.grief_death_marked zm_score::add_to_player_score( on_griefed_score() );
 	self zm_laststand::bleed_out();
 }
 
@@ -177,19 +179,9 @@ function grief_check_teams()
 	{
 		WAIT_SERVER_FRAME;
 
-		team_a_alive = 0;
-		team_b_alive = 0;
+		team_a_alive = grief_team_count( "A" );
+		team_b_alive = grief_team_count( "B" );
 
-		foreach ( player in level.players )
-		{
-			if ( zm_utility::is_player_valid( player ) )
-			{
-				if ( player.grief_team == "A" )
-					team_a_alive++;
-				else
-					team_b_alive++;
-			}
-		}
 		// neither team is down
 		if ( team_a_alive > 0 && team_b_alive > 0 )
 		{
@@ -250,4 +242,33 @@ function on_friendly_fire_damage( eInflictor, eAttacker, iDamage, iDFlags, sMean
 			self ApplyKnockBack( iDamage, vDir );
 		// TODO: other modifiers?
 	}
+}
+// self is player downed
+function on_griefed_score()
+{
+	const base_score = 150;
+
+	team = self.grief_team;
+	team_count = grief_team_count( team, true ); // count all players
+	up_count = grief_team_count( team );
+
+	score = base_score * ( team_count - up_count );
+
+	return score;
+}
+
+function grief_team_count( team = "A", b_skip_check = false )
+{
+	valid_count = 0;
+
+	foreach ( player in level.players )
+	{
+		if ( zm_utility::is_player_valid( player ) || b_skip_check )
+		{
+			if ( player.grief_team == team )
+				valid_count++;
+		}
+	}
+
+	return valid_count;
 }
