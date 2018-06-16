@@ -6,6 +6,9 @@
 //	{Grief}
 scriptparsetree,scripts/zm/gametypes/zgrief.csc
 scriptparsetree,scripts/zm/gametypes/zgrief.gsc
+scriptparsetree,scripts/zm/_zm_weap_meat.csc
+scriptparsetree,scripts/zm/_zm_weap_meat.gsc
+stringtable,gamedata/weapons/zm/zm_levelcommon_weapons.csv
 
 //  {T7ScriptSuite}
 scriptparsetree,scripts/m_shared/array_shared.gsc
@@ -30,3 +33,6 @@ sound,zm_mod
 
 // -LANGUAGE-
 localize,mod
+
+// -WEAPONS-
+weapon,grief_meat
