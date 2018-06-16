@@ -15,6 +15,8 @@
 #using scripts\zm\_zm_stats;
 #using scripts\zm\_zm_utility;
 
+#using scripts\zm\_zm_weap_meat;
+
 // T7ScriptSuite
 #using scripts\m_shared\util_shared;
 
